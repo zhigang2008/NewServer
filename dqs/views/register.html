@@ -1,0 +1,193 @@
+﻿{{template "header" .}}
+ 
+<div class="container">
+	 <div class="panel panel-info">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+  	<ol class="breadcrumb">
+     <li><a href="/"><span class="glyphicon glyphicon-home"></span>首页</a></li>
+     <li class="active">用户注册</li>
+  </ol>
+  </div>
+  <div class="panel-body">
+  <!--提示框-->
+  <div  id="msg" class="alert alert-success alert-dismissable" style="display:none">
+     <!--取消关闭按钮
+     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+     -->
+     <p id="msgcontent"></p>
+ </div>
+ <!--
+ <div id="process-div" class="progress progress-striped active" style="display:none">
+  <div id="process-bar" class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 5%">
+  </div>
+</div>
+-->
+ <form id="userform" class="form-horizontal" role="form" action="#" type="post">
+ 	 
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="UserId" >用户ID*</label>
+    <div class="col-sm-6">
+      <input id="UserId" type="text" class="form-control input-sm" name="UserId"  placeholder="用户主ID" autofocus />
+      <p class="help-block">请选择一个易记的名字,此名字将作为登陆主ID.(4~16位英文字母和数字组成)</p>
+    </div>
+  </div>
+ <div class="form-group">
+    <label class="col-sm-2 control-label" for="UserName" >真实姓名*</label>
+    <div class="col-sm-6">
+      <input id="UserName" type="text" class="form-control input-sm" name="UserName"  placeholder="真实姓名"  />
+      <p class="help-block"></p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="Password" >用户密码*</label>
+    <div class="col-sm-6">
+      <input id="Password" type="password" class="form-control" name="Password"  placeholder="用户密码"   />
+      <p class="help-block">请输入6~16位由数字和字符组成的密码</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="rePwd" >重复密码*</label>
+    <div class="col-sm-6">
+      <input id="rePwd" type="password" class="form-control" name="rePwd"  placeholder="重复输入密码"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="Email" >Email*</label>
+    <div class="col-sm-6">
+      <input id="Email" type="text" class="form-control input-sm" name="Email"  placeholder="电子邮件"  />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Phone" >电话</label>
+    <div class="col-sm-6">
+      <input id="Phone" type="text" class="form-control input-sm" name="Phone"  placeholder="电话"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Mobile" >手机</label>
+    <div class="col-sm-6">
+      <input id="Mobile" type="text" class="form-control input-sm" name="Mobile"  placeholder="手机"  />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="UserTitle" >头衔</label>
+    <div class="col-sm-6">
+      <input id="UserTitle" type="text" class="form-control input-sm" name="UserTitle"  placeholder="头衔"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Addr" >地址</label>
+    <div class="col-sm-6">
+      <input id="Addr" type="text" class="form-control input-sm" name="Addr"  placeholder="地址"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="Report" >速报接收</label>
+    <div class="col-sm-6">
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="ReportMail" value="true" checked /> 邮件速报
+      </label>
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="ReportPhone" value="true" checked /> 手机速报
+      </label>
+    </div>
+ </div>
+ <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button id="saveuser" type="button" class="btn btn-success ">注&nbsp;&nbsp;册</button>
+     </div>
+  </div>
+</form>
+
+</div> <!--end panel-body-->
+</div> <!--end panel-->
+</div>
+{{template "scripts"}}
+<script src="/static/js/validate.min.js"></script>
+<script src="/static/js/validate.additional-methods.min.js"></script>
+<script src="/static/js/validate.messages_zh.js"></script>
+<script src="/static/js/jquery.validate.bootstrap.popover.js"></script>
+<script src="/static/js/bootbox.min.js"></script>
+<script>
+ $(document).ready(function() {	
+  var form = $("#userform");
+  form.validate({
+  rules: {
+    UserId: {
+      required: true,
+      rangelength: [4, 16],
+      alnum:true
+    },
+    UserName: {
+      required: true,
+      chinese: true
+    },
+    Email: {
+      required: true,
+      email: true
+    },
+    Phone: {
+      phone: true
+    },
+    Mobile: {
+      mobile: true
+    },
+    Roles: {
+      required: true
+    },
+    Addr: {
+      maxlength: 100
+    },
+    UserTitle: {
+      maxlength: 50
+    },
+    Password: {
+      required: true,
+      rangelength: [6,16]
+    },
+    rePwd: {
+      required: true,
+      equalTo: "#Password"
+    }
+  }
+});	
+  
+  //提交操作
+ 	$("#saveuser").bind('click', function() {
+ 		if(form.valid()){
+      $.ajax({
+             type: "POST",
+             url: "/registersave",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             data: $("#userform").serialize() ,
+             success: function(json){
+               if(json.Ok==true){
+                    bootbox.alert("注册成功!",function(){
+                   	 window.location.href="/";
+                   });
+                }else{
+                 showError(json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 showError("保存失败,报告管理员:"+textStatus);
+             }
+           });
+           
+           }else{
+  	      showWarning("请校正填写数据.");
+         }
+    });
+  
+});
+</script>
+{{template "footer"}}

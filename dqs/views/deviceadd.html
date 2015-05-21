@@ -1,0 +1,476 @@
+﻿{{template "header" .}}
+ 
+<div class="container">
+	 <div class="panel panel-info">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+  	<ol class="breadcrumb">
+     <li><a href="/"><span class="glyphicon glyphicon-home"></span>首页</a></li>
+     <li><a href="/device">设备列表</a></li>
+     <li class="active">添加设备</li>
+  </ol>
+  </div>
+  <div class="panel-body">
+  
+  <!--提示框-->
+  <div  id="msg" class="alert alert-success alert-dismissable" style="display:none">
+     <!--取消关闭按钮
+     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+     -->
+     <p id="msgcontent"></p>
+ </div>
+ <!--
+ <div id="process-div" class="progress progress-striped active" style="display:none">
+  <div id="process-bar" class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 5%">
+  </div>
+</div>
+-->
+ <form id="deviceform" class="form-horizontal" role="form" action="#" method="post">
+ 	 <div class="form-group">
+    <div class="col-sm-offset-1 ">
+      <div class="col-sm-2"><button id="savedevice" type="button" class="btn btn-success "><span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;保&nbsp;&nbsp;存</button></div>
+      <div class="col-sm-2 pull-right"><button id="btn-reset" type="reset" class="btn btn-default "><span class="glyphicon glyphicon-retweet"></span>&nbsp;重&nbsp;&nbsp;置</button></div>
+     </div>
+  </div>
+  
+  <div id="deviceparams" class="col-md-6">
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="SensorId" >传感器编号*</label>
+    <div class="col-sm-7">
+      <input id="SensorId" type="text" class="form-control input-sm" name="SensorId"  placeholder="SensorId"   />
+      <!--<p class="help-block"></p>-->
+    </div>
+    <div class="col-sm-4"></div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="SiteName">站点名称*</label>
+    <div class="col-sm-7">
+      <input type="text" class="form-control input-sm" id="SiteName" name="SiteName" placeholder="SiteName"  />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Longitude">经度*</label>
+    <div class="col-sm-7">
+      <input type="text" class="form-control input-sm" id="Longitude" name="Longitude" placeholder="Longitude"  />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Latitude">纬度*</label>
+    <div class="col-sm-7">
+      <input type="text" class="form-control input-sm" id="Latitude" name="Latitude" placeholder="Latitude"  />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="SiteType">场地类型</label>
+    <div class="col-sm-7">
+      <select class="form-control input-sm" id="SiteType" name="SiteType">
+        <option value="0">土壤</option>
+        <option value="1" selected >软岩石</option>
+        <option value="2">硬岩石</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="ObserveObject">观测对象</label>
+    <div class="col-sm-7">
+      <select class="form-control input-sm" id="ObserveObject" name="ObserveObject">
+        <option value="0">深井</option>
+        <option value="1" selected >自由地表</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Accelerometer">加速度计型号</label>
+    <div class="col-sm-7">
+      <select class="form-control input-sm" id="Accelerometer" name="Accelerometer">
+        <option value="0">MEMS</option>
+        <option value="1">力平衡</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Direction">安装方向</label>
+    <div class="col-sm-7">
+      <!--
+      <label class="radio-inline">
+        <input type="radio" name="Direction"   value="0" checked> 南北向
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="Direction"   value="1" > 东西向
+      </label>
+      -->
+      <select class="form-control input-sm" id="Direction" name="Direction">
+        <option value="0">南北向</option>
+        <option value="1">东西向</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="RangeType">量程选择</label>
+    <div class="col-sm-7">
+      <select class="form-control input-sm" id="RangeType" name="RangeType">
+        <option value="0">±1.5g</option>
+        <option value="1" selected >±2g</option>
+        <option value="2">±4g</option>
+        <option value="3">±6g</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Period">采样周期</label>
+    <div class="col-sm-7">
+      <select class="form-control input-sm" id="Period" name="Period">
+        <option value="0">0.002s</option>
+        <option value="1">0.005s</option>
+        <option value="2" selected >0.01s</option>
+        <option value="3">0.02s</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="RegionCode">行政区划代码</label>
+    <div class="col-sm-7">
+      <input type="text" class="form-control input-sm" id="RegionCode" name="RegionCode" placeholder="RegionCode"  />
+    </div>
+  </div>
+  
+ </div> 
+ <!--自定义数据-->
+ <div id="custumparams" class="col-md-6 pull-right" style="border-left:#ccc 1px dashed;">
+  <div class="form-group">
+	 	<label class="col-sm-3 control-label" for="SiteAliasName">观测点名称</label>
+    <div class="col-sm-7">
+      <input id="SiteAliasName" type="text" class="form-control input-sm" name="SiteAliasName"  placeholder="观测点名称"  >
+    </div>
+  </div>
+  <div class="form-group">
+	 	<label class="col-sm-3 control-label" for="InstallDate">安装时间</label>
+    <div class="col-sm-7">
+      <input id="InstallDate" type="text" class="form-control input-sm" name="InstallDate"  placeholder="yyyy-mm-dd"  value="2013-03-28">
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-3 control-label" for="Installer">安装人员</label>
+    <div class="col-sm-7">
+      <input id="Installer" type="text" class="form-control input-sm" name="Installer"  placeholder="Installer"  >
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-3 control-label" for="Contact">联系人</label>
+    <div class="col-sm-7">
+      <input id="Contact" type="text" class="form-control input-sm" name="Contact"  placeholder="Contact"  >
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-3 control-label" for="Telphone">固定电话</label>
+    <div class="col-sm-7">
+      <input id="Telphone" type="text" class="form-control input-sm" name="Telphone"  placeholder="Telphone"  >
+    </div>
+  </div>
+  <div class="form-group">
+	<label class="col-sm-3 control-label" for="Mobile">移动电话</label>
+    <div class="col-sm-7">
+      <input id="Mobile" type="text" class="form-control input-sm" name="Mobile"  placeholder="Mobile"  >
+    </div>
+  </div>
+  <div class="form-group">
+	 	<label class="col-sm-3 control-label" for="MaintainDate">维护日期</label>
+    <div class="col-sm-7">
+      <input id="MaintainDate" type="text" class="form-control input-sm" name="MaintainDate"  placeholder="yyyy-mm-dd" >
+    </div>
+  </div>
+  <div class="form-group">
+	 	<label class="col-sm-3 control-label" for="MaintainPeole">维护人</label>
+    <div class="col-sm-7">
+      <input id="MaintainPeole" type="text" class="form-control input-sm" name="MaintainPeole"  placeholder="MaintainPeole" >
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-3 control-label" for="NetType">网络类型</label>
+    <div class="col-sm-7">
+      <label class="radio-inline">
+         <input type="radio"  name="NetType" value="3G" checked > 
+         <span class="label label-success">3G网络</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NetType" value="有线"  > 
+         <span class="label label-success">有线网络</span>
+      </label>
+    </div>
+  </div>
+  <!--3G 信息-->
+  <div id="div_3G_info" class="well col-sm-offset-1 col-sm-10" style="display:block" >
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetOperator">3G运营商</label>
+    <div class="col-sm-8">
+      <label class="radio-inline">
+         <input type="radio"  name="NetOperator" value="电信" checked  > 
+         <span class="label label-success">电信</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NetOperator" value="移动"    > 
+         <span class="label label-success">移动</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NetOperator" value="联通"   > 
+         <span class="label label-success">联通</span>
+      </label>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetNo">用户号码</label>
+    <div class="col-sm-7">
+      <input id="NetNo" type="text" class="form-control input-sm" name="NetNo"  placeholder="用户的号码" >
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetTariff">资费标准</label>
+    <div class="col-sm-7">
+      <input id="NetTariff" type="text" class="form-control input-sm" name="NetTariff"  placeholder="资费标准"  >
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetTraffic">包月流量(MB)</label>
+    <div class="col-sm-7">
+      <input id="NetTraffic" type="text" class="form-control input-sm" name="NetTraffic"  placeholder="NetTraffic" >
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="StartDate">开卡日期</label>
+    <div class="col-sm-7">
+      <input id="StartDate" type="text" class="form-control input-sm" name="StartDate"  placeholder="yyyy-mm-dd"  >
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="sValidDate">有效日期</label>
+    <div class="col-sm-7">
+      <input id="sValidDate" type="text" class="form-control input-sm" name="sValidDate"  placeholder="yyyy-mm-dd"  >
+    </div>
+  </div>
+  <!--
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetQixian">有效期(个月)</label>
+    <div class="col-sm-7">
+      <input id="NetQixian" type="text" class="form-control input-sm" name="NetQixian"  placeholder="NetQixian" value="12" >
+    </div>
+  </div>
+ </div>
+ -->
+  <!--有线网络信息-->
+ <div id="div_wire_info"  class="well col-sm-offset-1 col-sm-10" style="display:none">
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="IPType">IP类型</label>
+    <div class="col-sm-7">
+      <label class="radio-inline">
+         <input type="radio"  name="IPType" value="D"      /> 
+         <span class="label label-success">动态IP</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="IPType" value="S"  checked  /> 
+         <span class="label label-success">静态IP</span>
+      </label>
+    </div>
+  </div>
+  <!--静态地址-->
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="IPAddress">IP地址</label>
+    <div class="col-sm-7">
+      <input id="IPAddress" type="text" class="form-control input-sm" name="IPAddress"  placeholder="IP地址" >
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="IPMask">子网掩码</label>
+    <div class="col-sm-7">
+      <input id="IPMask" type="text" class="form-control input-sm" name="IPMask"  placeholder="子网掩码" value="255.255.255.0" >
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="GateWay">网关</label>
+    <div class="col-sm-7">
+      <input id="GateWay" type="text" class="form-control input-sm" name="GateWay"  placeholder="网关地址" value="192.168.0.1" >
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="DNS">DNS</label>
+    <div class="col-sm-7">
+      <input id="DNS" type="text" class="form-control input-sm" name="DNS"  placeholder="DNS地址"  >
+    </div>
+  </div>
+</div> <!--end div_wire_info-->
+</div> 
+ <!--是否禁用-->
+ <input id="NotUse" type="hidden" name="NotUse"  value="false" />
+</form>
+
+</div> <!--end panel-body-->
+</div> <!--end panel-->
+</div>
+{{template "scripts"}}
+<script src="/static/js/validate.min.js"></script>
+<script src="/static/js/validate.additional-methods.min.js"></script>
+<script src="/static/js/validate.messages_zh.js"></script>
+<script src="/static/js/jquery.validate.bootstrap.popover.js"></script>
+<script>
+ $(document).ready(function() {	
+ 	//校验
+  var form = $("#deviceform");
+  form.validate({
+    rules: {
+    SensorId: {
+      required: true,
+      minlength: 10,
+      maxlength: 10
+    },
+    SiteName: {
+      required: true,
+      alnum: true
+    },
+    Longitude: {
+      required: true,
+      number: true
+    },
+    Latitude: {
+      required: true,
+      number: true
+    },
+    SiteType: {
+      required: true
+    },
+    Period: {
+      number: true
+    },
+    RegionCode: {
+    	digits:true,
+      minlength: 6,
+      maxlength: 6
+    },
+    SiteAliasName: {
+      required: true,
+      maxlength:10
+    },
+    InstallDate: {
+      dateISO: true
+    },
+    Installer: {
+    	chinese:true,
+      maxlength:30
+    },
+    Contact: {
+    	chinese:true,
+      maxlength: 30
+    },
+    Telphone: {
+      phone: true
+    },
+    Mobile: {
+      mobile: true
+    },
+    MaintainDate: {
+      dateISO: true
+    },
+    MaintainPeole: {
+    	chinese:true,
+      maxlength:30
+    },
+    NetType: {
+      required: true
+    },
+    NetNo: {
+      mobile: true
+    },
+    NetTariff: {
+      maxlength:30
+    },
+    StartDate: {
+      dateISO: true
+    },
+    NetTraffic: {
+      number: true
+    },
+    sValidDate: {
+      dateISO: true
+    },
+    IPAddress: {
+      ipv4: true
+    },
+    IPMask: {
+      ipv4: true
+    },
+    GateWay: {
+      ipv4: true
+    },
+    DNS: {
+      ipv4: true
+    },
+    NotUse: {
+      required: true
+    }
+   },
+  messages:{
+  	InstallDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    },
+    MaintainDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    },
+    StartDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    },
+    sValidDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    }
+  }
+   
+  });	
+  
+  //3G 有线切换显示 
+  $("input[name='NetType'][type='radio']").bind('change',function(){
+  	$("#div_3G_info").toggle();
+  	$("#div_wire_info").toggle();
+  });
+  
+   $("input[name='IPType'][type='radio']").bind('change',function(){
+  	if(this.value=='D'){
+  	  $("#IPAddress").prop("disabled", true);
+  	  $("#IPMask").prop("disabled", true);
+  	  $("#GateWay").prop("disabled", true);
+  	  $("#DNS").prop("disabled", true);
+    }else{
+    	$("#IPAddress").prop("disabled", false);
+  	  $("#IPMask").prop("disabled", false);
+  	  $("#GateWay").prop("disabled", false);
+  	  $("#DNS").prop("disabled", false);
+    }
+  });
+  
+  //提交操作
+ 	$("#savedevice").bind('click', function() {
+ 		if(form.valid()){
+      $.ajax({
+             type: "POST",
+             url: "/device",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             data: $("#deviceform").serialize() ,
+             success: function(json){
+               if(json.Ok==true){
+                    showSuccess("设备添加成功!");
+               	 
+                }else{
+                 showError(json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 showError("保存失败,报告管理员:"+textStatus);
+             }
+           });
+           
+           }else{
+  	      showWarning("请校正填写数据.");
+         }
+    });
+  
+});
+</script>
+{{template "footer"}}

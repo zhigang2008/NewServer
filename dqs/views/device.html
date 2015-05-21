@@ -1,0 +1,876 @@
+﻿{{template "header" .}}
+ 
+{{$curUser := .CurrentUser}}
+{{with .device}}
+<div class="container">
+		 <div class="panel panel-info">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+  	<ol class="breadcrumb">
+     <li><a href="/"><span class="glyphicon glyphicon-home"></span>首页</a></li>
+     <li><a href="/device">设备列表</a></li>
+     <li class="active">设备信息</li>
+  </ol>
+  </div>
+  <div class="panel-body">
+  <!--提示框-->
+  <div  id="msg" class="alert alert-success alert-dismissable" style="display:none">
+     <!--<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>-->
+     <p id="msgcontent"></p>
+ </div>
+ <div id="process-div" class="progress progress-striped active" style="display:none">
+  <div id="process-bar" class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 5%">
+  </div>
+</div>
+<!-- Nav tabs -->
+<ul id="nav-tab" class="nav nav-tabs">
+  <li><a href="#deviceparams" data-toggle="tab">设备参数</a></li>
+  <li><a href="#customparams" data-toggle="tab">自定义数据</a></li>
+</ul>
+
+<!--标签内容 -->
+<div  class="tab-content">
+ <div id="deviceparams" class="tab-pane active" >
+ <form id="setparamform" class="form-horizontal" role="form" action="/deviceparams/update/{{.SensorId}}" type="post">
+ 	 <div class="form-group"></div>
+ 	 	<div class="form-group">
+    <div class=" col-sm-10">
+    	{{if hasrole $curUser.Roles "role_admin"}}
+      <button id="refreshparams" type="button" class="btn btn-success"><span class="glyphicon glyphicon-repeat"></span>&nbsp;重新读取</button>
+      &nbsp;&nbsp;
+      <button id="setparams" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-wrench">设置参数</span></button>
+      &nbsp;&nbsp;
+      <button id="setsave" type="button" class="btn btn-warning" style="display:none"><span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;保存设置</button>
+      {{end}}
+    </div>
+  </div>
+{{with .SetParams}}
+ <!--左侧div-->
+ <div id="deviceparams-left" class="col-md-6">
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SonsorId">传感器编号</label>
+    <div class="col-sm-6">
+      <input id="SensorId" type="text" class="form-control input-sm" name="SensorId"  placeholder="SensorId" value="{{.SensorId}}" disabled >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SiteName">站点名称</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="SiteName" name="SiteName" placeholder="SiteName" value="{{.SiteName}}" disabled >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="Longitude">经度</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="Longitude" name="Longitude" placeholder="Longitude" value="{{.Longitude}}" disabled >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="Latitude">纬度</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="Latitude" name="Latitude" placeholder="Latitude" value="{{.Latitude}}" disabled >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SiteType">场地类型</label>
+    <div class="col-sm-6">
+      <!--<input type="text" class="form-control input-sm" id="SiteType" name="SiteType" placeholder="SiteType" value="{{.SiteType}}" disabled>-->
+      <select class="form-control input-sm" id="SiteType" name="SiteType" disabled >
+        <option value="0" {{if eq .SiteType 0}} selected {{end}} >土壤</option>
+        <option value="1" {{if eq .SiteType 1}} selected {{end}} >软岩石</option>
+        <option value="2" {{if eq .SiteType 2}} selected {{end}} >硬岩石</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="ObserveObject">观测对象</label>
+    <div class="col-sm-6">
+      <select class="form-control input-sm" id="ObserveObject" name="ObserveObject" disabled >
+        <option value="0" {{if eq .ObserveObject 0}} selected {{end}} >深井</option>
+        <option value="1" {{if eq .ObserveObject 1}} selected {{end}} >自由地表</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="ObserveObject">加速度计型号</label>
+    <div class="col-sm-6">
+      <select class="form-control input-sm" id="Accelerometer" name="Accelerometer" disabled >
+        <option value="0" {{if eq .ObserveObject 0}} selected {{end}} >MEMS</option>
+        <option value="1" {{if eq .ObserveObject 1}} selected {{end}} >力平衡</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="Direction">安装方向</label>
+    <div class="col-sm-6">
+      <select class="form-control input-sm" id="Direction" name="Direction" disabled >
+        <option value="0" {{if eq .Direction 0}} selected {{end}} >南北向</option>
+        <option value="1" {{if eq .Direction 1}} selected {{end}} >东西向</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="RangeType">量程选择</label>
+    <div class="col-sm-6">
+      <select class="form-control input-sm" id="RangeType" name="RangeType" disabled >
+        <option value="0" {{if eq .RangeType 0}} selected {{end}} >±1.5g</option>
+        <option value="1" {{if eq .RangeType 1}} selected {{end}} >±2g</option>
+        <option value="2" {{if eq .RangeType 2}} selected {{end}} >±4g</option>
+        <option value="3" {{if eq .RangeType 3}} selected {{end}} >±6g</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="Period">采样周期</label>
+    <div class="col-sm-6">
+      <select class="form-control input-sm" id="Period" name="Period" disabled >
+        <option value="0" {{if eq .Period 0.0}} selected {{end}} >0.002s</option>
+        <option value="1" {{if eq .Period 1.0}} selected {{end}} >0.005s</option>
+        <option value="2" {{if eq .Period 2.0}} selected {{end}} >0.01s</option>
+        <option value="3" {{if eq .Period 3.0}} selected {{end}} >0.02s</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="RegionCode">行政区划代码</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="RegionCode" name="RegionCode" placeholder="RegionCode" value="{{.RegionCode}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="Custom1">预留1</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="Custom1" name="Custom1" placeholder="Custom1" value="{{.Custom1}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="Custom2">预留2</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="Custom2" name="Custom2" placeholder="Custom2" value="{{.Custom2}}" disabled>
+    </div>
+  </div>
+ </div> 
+ <!--右侧div-->
+ <div id="deviceparams-right" class="col-md-6 pull-right" style="border-left:#ccc 1px dashed;"> 
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="PGATrigger">PGA触发</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="PGATrigger"  value="1" {{if eq .PGATrigger 1}} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="PGATrigger"  value="0" {{if eq .PGATrigger 0}} checked {{end}} disabled> 否
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="PGATrgThreshold">PGA阀值(cm/s2)</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="PGATrgThreshold" name="PGATrgThreshold" placeholder="PGATrgThreshold" value="{{.PGATrgThreshold}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SITrigger">SI触发</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="SITrigger"  value="1" {{if eq .SITrigger 1}} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="SITrigger"  value="0" {{if eq .SITrigger 0}} checked {{end}} disabled> 否
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SITrgThreshold">SI阀值(cm)</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="SITrgThreshold" name="SITrgThreshold" placeholder="SITrgThreshold" value="{{.SITrgThreshold}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="CombTrigger">组合触发</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="CombTrigger"  value="0" {{if eq .CombTrigger 0}} checked {{end}} disabled> 不组合
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="CombTrigger"  value="1" {{if eq .CombTrigger 1}} checked {{end}} disabled> 逻辑"或"
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="CombTrigger"  value="2" {{if eq .CombTrigger 2}} checked {{end}} disabled> 逻辑"并"
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="ReserveTrigger">预留触发</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="ReserveTrigger"  value="1" {{if eq .ReserveTrigger 1}} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="ReserveTrigger"  value="0" {{if eq .ReserveTrigger 0}} checked {{end}} disabled> 否
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="ReserveTrgThreshold">预留阀值</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="ReserveTrgThreshold" name="ReserveTrgThreshold" placeholder="ReserveTrgThreshold" value="{{.ReserveTrgThreshold}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="PGAAlert">PGA报警</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="PGAAlert"  value="1" {{if eq .PGAAlert 1}} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="PGAAlert"  value="0" {{if eq .PGAAlert 0}} checked {{end}} disabled> 否
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="PGAAlertThreshold">PGA报警阀值(cm/s2)</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="PGAAlertThreshold" name="PGAAlertThreshold" placeholder="PGAAlertThreshold" value="{{.PGAAlertThreshold}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SIAlert">SI报警</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="SIAlert"  value="1" {{if eq .SIAlert 1}} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="SIAlert"  value="0" {{if eq .SIAlert 0}} checked {{end}} disabled> 否
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="SIAlertThreshold">SI报警阀值(cm)</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="SIAlertThreshold" name="SIAlertThreshold" placeholder="SIAlertThreshold" value="{{.SIAlertThreshold}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="CombAlert">组合报警</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="CombAlert"  value="0" {{if eq .CombAlert 0}} checked {{end}} disabled> 不组合
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="CombAlert"  value="1" {{if eq .CombAlert 1}} checked {{end}} disabled> 逻辑"或"
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="CombAlert"  value="2" {{if eq .CombAlert 2}} checked {{end}} disabled> 逻辑"并"
+      </label>
+    </div>
+  </div>	
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="ReserveAlert">预留报警</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+        <input type="radio" name="ReserveAlert"  value="1" {{if eq .ReserveAlert 1}} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="ReserveAlert"  value="0" {{if eq .ReserveAlert 0}} checked {{end}} disabled> 否
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="ReserveAlertThreshold">预留报警阀值</label>
+    <div class="col-sm-6">
+      <input type="text" class="form-control input-sm" id="ReserveAlertThreshold" name="ReserveAlertThreshold" placeholder="ReserveAlertThreshold" value="{{.ReserveAlertThreshold}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="DA1" >DA输出1</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+         <input type="radio"  name="DA1" value="1" {{if eq .DA1  1}}  checked {{end}} disabled /> 
+         <span class="label label-success">PGA输出</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="DA1" value="0"  {{if eq .DA1 0 }} checked {{end}} disabled /> 
+         <span class="label label-info">SI输出</span>
+      </label>
+    </div>
+ </div>
+ <div class="form-group">
+    <label class="col-sm-4 control-label" for="DA2" >DA输出2</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+         <input type="radio"  name="DA2" value="1" {{if eq .DA2  1}}  checked {{end}} disabled /> 
+         <span class="label label-success">PGA输出</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="DA2" value="0"  {{if eq .DA2 0 }} checked {{end}} disabled /> 
+         <span class="label label-info">SI输出</span>
+      </label>
+    </div>
+ </div>
+ <div class="form-group">
+    <label class="col-sm-4 control-label" for="IO1" >IO输出1</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+         <input type="radio"  name="IO1" value="1" {{if eq .IO1  1}}  checked {{end}} disabled /> 
+         <span class="label label-success">无故障</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="IO1" value="0"  {{if eq .IO1 0 }} checked {{end}} disabled /> 
+         <span class="label label-default">有故障</span>
+      </label>
+    </div>
+ </div>
+ <div class="form-group">
+    <label class="col-sm-4 control-label" for="IO2" >IO输出2</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+         <input type="radio"  name="IO2" value="1" {{if eq .IO2  1}}  checked {{end}} disabled /> 
+         <span class="label label-success">无故障</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="IO2" value="0"  {{if eq .IO2 0 }} checked {{end}} disabled /> 
+         <span class="label label-default">有故障</span>
+      </label>
+    </div>
+ </div>
+</div>
+{{end}}
+ </form>
+</div> <!--end deviceparams-->
+<!--自定义数据-->
+
+<div id="customparams" class="tab-pane " >
+	<form id="customparamform" class="form-horizontal" role="form" action="/customparams/update/{{.SensorId}}" type="post">
+ 	 <div class="form-group"></div>
+ 	 <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      {{if hasrole $curUser.Roles "role_admin"}}
+      <button id="setparams2" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-wrench">设置参数</span></button>
+      &nbsp;&nbsp;
+      <button id="setsave2" type="button" class="btn btn-warning" style="display:none"><span class="glyphicon glyphicon-floppy-disk"></span>&nbsp;保存设置</button>
+      {{end}}
+    </div>
+  </div>
+	{{with .CustomParams}}
+	 <!--左侧div-->
+ <div id="CustomParams-left" class="col-md-6">
+	 <div class="form-group">
+	 	<label class="col-sm-4 control-label" for="SiteAliasName">观测点名称</label>
+    <div class="col-sm-6">
+      <input id="SiteAliasName" type="text" class="form-control input-sm" name="SiteAliasName"  placeholder="观测点名称"  value="{{.SiteAliasName}}" disabled >
+    </div>
+   </div>
+	 <div class="form-group">
+	 	<label class="col-sm-4 control-label" for="InstallDate">安装时间</label>
+    <div class="col-sm-6">
+      <input id="InstallDate" type="text" class="form-control input-sm" name="InstallDate"  placeholder="yyyy-mm-dd" value="{{.InstallDate}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="Installer">安装人员</label>
+    <div class="col-sm-6">
+      <input id="Installer" type="text" class="form-control input-sm" name="Installer"  placeholder="Installer" value="{{.Installer}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="Contact">联系人</label>
+    <div class="col-sm-6">
+      <input id="Contact" type="text" class="form-control input-sm" name="Contact"  placeholder="Contact" value="{{.Contact}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="Telphone">固定电话</label>
+    <div class="col-sm-6">
+      <input id="Telphone" type="text" class="form-control input-sm" name="Telphone"  placeholder="Telphone" value="{{.Telphone}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+	<label class="col-sm-4 control-label" for="Mobile">移动电话</label>
+    <div class="col-sm-6">
+      <input id="Mobile" type="text" class="form-control input-sm" name="Mobile"  placeholder="Mobile" value="{{.Mobile}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+	 	<label class="col-sm-4 control-label" for="MaintainDate">维护日期</label>
+    <div class="col-sm-6">
+      <input id="MaintainDate" type="text" class="form-control input-sm" name="MaintainDate"  placeholder="yyyy-mm-dd" value="{{.MaintainDate}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+	 	<label class="col-sm-4 control-label" for="MaintainPeole">维护人</label>
+    <div class="col-sm-6">
+      <input id="MaintainPeole" type="text" class="form-control input-sm" name="MaintainPeole"  placeholder="MaintainPeole" value="{{.MaintainPeole}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-4 control-label" for="NotUse" >是否禁用</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+         <input type="radio"  name="NotUse" value="false" {{if eq .NotUse  false}}  checked {{end}} disabled /> 
+         <span class="label label-success">活动</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NotUse" value="true"  {{if .NotUse }} checked {{end}} disabled /> 
+         <span class="label label-default">停用</span>
+      </label>
+    </div>
+ </div>
+</div>  
+<!--右侧div-->  
+<div id="CustomParams-right" class="col-md-6 pull-right" style="border-left:#ccc 1px dashed;">
+	<div class="form-group">
+  <label class="col-sm-4 control-label" for="NetType">网络类型</label>
+    <div class="col-sm-6">
+      <label class="radio-inline">
+         <input type="radio"  name="NetType" value="3G" {{if eq .NetType "3G" }}  checked {{end}} disabled /> 
+         <span class="label label-success">3G网络</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NetType" value="有线"  {{if ne .NetType "3G" }} checked {{end}} disabled /> 
+         <span class="label label-success">有线网络</span>
+      </label>
+    </div>
+  </div>
+
+ <div class="form-group">
+  <!--3G 信息-->
+  <div id="div_3G_info"  class="well col-sm-offset-2 col-sm-10" style="display:{{if eq .NetType "3G"}}block{{else}}none{{end}}">
+  {{with .WirelessTypeInfo}}
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetOperator">3G运营商</label>
+    <div class="col-sm-8">
+      <label class="radio-inline">
+         <input type="radio"  name="NetOperator" value="电信" {{if eq .NetOperator  "电信"}}  checked {{end}} disabled /> 
+         <span class="label label-success">电信</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NetOperator" value="移动"  {{if eq .NetOperator "移动" }} checked {{end}} disabled /> 
+         <span class="label label-success">移动</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="NetOperator" value="联通" {{if eq .NetOperator  "联通"}}  checked {{end}} disabled /> 
+         <span class="label label-success">联通</span>
+      </label>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetNo">用户号码</label>
+    <div class="col-sm-6">
+      <input id="NetNo" type="text" class="form-control input-sm" name="NetNo"  placeholder="用户的号码" value="{{.NetNo}}" disabled>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetTariff">资费标准</label>
+    <div class="col-sm-6">
+      <input id="NetTariff" type="text" class="form-control input-sm" name="NetTariff"  placeholder="资费标准" value="{{.NetTariff}}" disabled>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="NetTraffic">包月流量(MB)</label>
+    <div class="col-sm-6">
+      <input id="NetTraffic" type="text" class="form-control input-sm" name="NetTraffic"  placeholder="NetTraffic" value="{{.NetTraffic}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="StartDate">开卡日期</label>
+    <div class="col-sm-6">
+      <input id="StartDate" type="text" class="form-control input-sm" name="StartDate"  placeholder="yyyy-mm-dd" value="{{.StartDate}}" disabled>
+    </div>
+  </div>
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="sValidDate">有效日期</label>
+    <div class="col-sm-6">
+      <input id="sValidDate" type="text" class="form-control input-sm" name="sValidDate"  placeholder="yyyy-mm-dd" value="{{dateformat .ValidDate "2006-01-02"}}" disabled>
+    </div>
+  </div>
+   <!--<div class="form-group">
+  <label class="col-sm-4 control-label" for="NetQixian">有效期(个月)</label>
+    <div class="col-sm-6">
+      <input id="NetQixian" type="text" class="form-control input-sm" name="NetQixian"  placeholder="NetQixian" value="{{.NetQixian}}" disabled>
+    </div>
+  </div>
+  -->
+  {{end}}
+ </div>
+ <!--有线网络信息-->
+ <div id="div_wire_info"  class="well col-sm-offset-2 col-sm-10" style="display:{{if ne .NetType "3G"}}block{{else}}none{{end}}">
+  {{with .WireTypeInfo}}
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="IPType">IP类型</label>
+    <div class="col-sm-8">
+      <label class="radio-inline">
+         <input type="radio"  name="IPType" value="D" {{if eq .IPType "D" ""}}  checked {{end}} disabled /> 
+         <span class="label label-success">动态IP</span>
+      </label>
+      <label class="radio-inline">
+         <input type="radio"  name="IPType" value="S"  {{if eq .IPType "S" }} checked {{end}} disabled /> 
+         <span class="label label-success">静态IP</span>
+      </label>
+    </div>
+  </div>
+  <!--静态地址-->
+  <div class="form-group">
+  <label class="col-sm-4 control-label" for="IPAddress">IP地址</label>
+    <div class="col-sm-6">
+      <input id="IPAddress" type="text" class="form-control input-sm" name="IPAddress"  placeholder="IP地址" value="{{.IPAddress}}" disabled>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="IPMask">子网掩码</label>
+    <div class="col-sm-6">
+      <input id="IPMask" type="text" class="form-control input-sm" name="IPMask"  placeholder="子网掩码" value="{{.IPMask}}" disabled>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="GateWay">网关</label>
+    <div class="col-sm-6">
+      <input id="GateWay" type="text" class="form-control input-sm" name="GateWay"  placeholder="网关地址" value="{{.GateWay}}" disabled>
+    </div>
+  </div>
+   <div class="form-group">
+  <label class="col-sm-4 control-label" for="DNS">DNS</label>
+    <div class="col-sm-6">
+      <input id="DNS" type="text" class="form-control input-sm" name="DNS"  placeholder="DNS地址" value="{{.DNS}}" disabled>
+    </div>
+  </div>
+ {{end}}
+ </div> <!--end div_wire_info-->
+</div>
+</div>  <!--end div-right--> 
+	{{end}}	
+</form>
+</div>
+
+</div> <!--end tab-content-->
+
+</div> <!--end panel-body-->
+</div> <!--end panel-->
+</div>
+{{template "scripts"}}
+<script src="/static/js/validate.min.js"></script>
+<script src="/static/js/validate.additional-methods.min.js"></script>
+<script src="/static/js/validate.messages_zh.js"></script>
+<script src="/static/js/jquery.validate.bootstrap.popover.js"></script>
+<script src="/static/js/tab.js"></script>
+<script src="/static/js/bootbox.min.js"></script>
+<script>
+	 //进度条
+    var p=10;
+    function processbar(){
+    	p+=1;
+      $("#process-bar").css("width",p+"%");
+      if(p<100){
+     	 setTimeout("processbar()",100);
+      }
+    };
+
+
+//初始化    
+$(document).ready(function(){
+		{{if .Online}}
+		$('#nav-tab a:first').tab('show')
+		 //ajax提示信息
+    $(document).ajaxStart(function(){
+         $("#process-div").show();
+         $("#msg").hide();
+         $('#refreshparams').prop('disabled',true);
+         $('#setsave').prop('disabled',true);
+         $('#setsave2').prop('disabled',true);
+         processbar();
+     }).ajaxStop(function(){
+     	   p=10;
+     	   $('#refreshparams').prop('disabled',false);
+     	   $('#setsave').prop('disabled',false); 
+     	   $('#setsave2').prop('disabled',false);   
+         $("#process-div").hide();
+    });
+    
+		//刷新参数按钮
+    $('#refreshparams').bind('click', function() {
+      $.ajax({
+             type: "GET",
+             url: "/deviceparams/refresh?id={{.SensorId}}&&remote={{.RemoteAddr}}",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             //data: "name=John&location=Boston",
+             success: function(json){
+               if(json.Ok==true){
+               	//读取成功后,刷新页面获取最新数据
+               	 bootbox.alert("参数读取成功",function(){
+               	     window.location.reload(true);
+                  });
+                }else{
+                	showError(json.Msg)
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+             	showWarning("读取参数失败,报告管理员:"+textStatus)
+             }
+           });
+       
+    });
+
+    //设置参数按钮
+    var setchange=false;
+    $("#setparams").bind('click',function(){
+         $("#setsave").toggle();
+         if(setchange==false){
+         	setchange=true;
+         	$("#setparams span").text("取消设置");
+         	$("#setparamform  :text").prop('disabled',false);
+         	$("#setparamform  :radio").prop('disabled',false);
+         	$("#setparamform  select").prop('disabled',false);
+        }else{
+        	setchange=false;
+         	$("#setparams span").text("设置参数");
+         	$("#setparamform :text").prop('disabled',true);
+         	$("#setparamform :radio").prop('disabled',true);
+         	$("#setparamform select").prop('disabled',true);
+        }
+    });
+
+  {{else}}
+  	$('#nav-tab a:last').tab('show')
+  	//不在线,不能执行操作
+    $('#refreshparams').prop('disabled',true); 
+    $('#setparams').prop('disabled',true);  
+    
+    showWarning("设备未连线,无法进行设备参数的读写操作.仅可以进行自定义参数读写");
+    
+  {{end}}
+  
+  
+//设置自定义参数按钮
+    var setchange2=false;
+    $("#setparams2").bind('click',function(){
+         $("#setsave2").toggle();
+         if(setchange2==false){
+         	setchange2=true;
+         	$("#setparams2 span").text("取消设置");
+         	$("#customparamform  :text").prop('disabled',false);
+         	$("#customparamform  :radio").prop('disabled',false);
+         	$("#customparamform  select").prop('disabled',false);
+         }else{
+        	setchange2=false;
+         	$("#setparams2 span").text("设置参数");
+         	$("#customparamform  :text").prop('disabled',true);
+         	$("#customparamform  :radio").prop('disabled',true);
+         	$("#customparamform  select").prop('disabled',true);
+        }
+    });
+
+//3G 有线切换显示 
+  $("input[name='NetType'][type='radio']").bind('change',function(){
+  	$("#div_3G_info").toggle();
+  	$("#div_wire_info").toggle();
+  });
+  
+   $("input[name='IPType'][type='radio']").bind('change',function(){
+  	if(this.value=='D'){
+  	  $("#IPAddress").prop("disabled", true);
+  	  $("#IPMask").prop("disabled", true);
+  	  $("#GateWay").prop("disabled", true);
+  	  $("#DNS").prop("disabled", true);
+    }else{
+    	$("#IPAddress").prop("disabled", false);
+  	  $("#IPMask").prop("disabled", false);
+  	  $("#GateWay").prop("disabled", false);
+  	  $("#DNS").prop("disabled", false);
+    }
+  });
+  
+ //设备参数表单提交
+    	$("#setsave").bind('click', function() {
+       if($("#setparamform").valid()){
+      	$.ajax({
+             type: "POST",
+             url: "/deviceparams/update?id={{.SensorId}}&remote={{.RemoteAddr}}",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             data: $("#setparamform").serialize() ,
+             success: function(json){
+               if(json.Ok==true){
+                    showSuccess("设备参数更改成功!");
+                    $("#setparams").trigger('click');
+               	 
+                }else{
+                 showError(json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 showError("更改失败,报告管理员:"+textStatus);
+             }
+           });
+      }
+    });
+   //自定义参数表单提交 
+    $("#setsave2").bind('click', function() {
+      if($("#customparamform").valid()){
+      	$.ajax({
+             type: "POST",
+             url: "/customparams/update/{{.SensorId}}",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             data: $("#customparamform").serialize() ,
+             success: function(json){
+               if(json.Ok==true){
+                    showSuccess("自定义数据保存成功!");
+                    $("#setparams2").trigger('click');
+                }else{
+                 showError(json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 showError("保存失败,报告管理员:"+textStatus);
+             }
+           });
+         }
+    });
+    
+//表单校验
+ $("#customparamform").validate({
+   rules: {
+    InstallDate: {
+      dateISO: true
+    },
+    Installer: {
+    	chinese:true,
+      maxlength:30
+    },
+    Contact: {
+    	chinese:true,
+      maxlength: 30
+    },
+    Telphone: {
+      phone: true
+    },
+    Mobile: {
+      mobile: true
+    },
+    MaintainDate: {
+      dateISO: true
+    },
+    MaintainPeole: {
+    	chinese:true,
+      maxlength:30
+    },
+    NetType: {
+      required: true
+    },
+    NetNo: {
+      mobile: true
+    },
+    NetTariff: {
+      maxlength:30
+    },
+    StartDate: {
+      dateISO: true
+    },
+    NetTraffic: {
+      number: true
+    },
+    sValidDate: {
+      dateISO: true
+    },
+    IPAddress: {
+      ipv4: true
+    },
+    IPMask: {
+      ipv4: true
+    },
+    GateWay: {
+      ipv4: true
+    },
+    DNS: {
+      ipv4: true
+    },
+    NotUse: {
+      required: true
+    }
+  },
+  messages:{
+  	InstallDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    },
+    MaintainDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    },
+    StartDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    },
+    sValidDate: {
+      dateISO: "请输入YYYY-MM-DD格式的日期,如2013-01-28"
+    }
+  }
+});	
+
+$("#setparamform").validate({
+   rules: {
+     SensorId: {
+      required: true,
+      alphanumeric:true,
+      minlength: 10,
+      maxlength:10
+    },
+    SiteName: {
+      required: true,
+      maxlength:15,
+      alnum: true
+    },
+    Longitude: {
+      required: true,
+      number: true
+    },
+    Latitude: {
+      required: true,
+      number: true
+    },
+    SiteType: {
+      required: true
+    },
+    ObserveObject: {
+      required: true
+    },
+    Period: {
+      required: true
+    },
+    RegionCode: {
+      minlength: 6,
+      maxlength:6
+    },
+    Custom1: {
+      alphanumeric:true
+    },
+    Custom2: {
+      alphanumeric:true
+    },
+    PGATrgThreshold: {
+      number:true
+    },
+    SITrgThreshold: {
+      number:true
+    },
+    ReserveTrgThreshold: {
+      number:true
+    },
+    PGAAlertThreshold: {
+      number:true
+    },
+    SIAlertThreshold: {
+      number:true
+    },
+    ReserveAlertThreshold: {
+      number:true
+    }
+  }
+});	
+
+ });
+</script>
+ 
+ {{end}}
+{{template "footer"}}

@@ -1,0 +1,421 @@
+{{template "header" .}}
+ 
+{{with .configs}}
+<div class="container">
+	 <div class="panel panel-info">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+  	<ol class="breadcrumb">
+     <li><a href="/"><span class="glyphicon glyphicon-home">&nbsp;</span>首页</a></li>
+     <li class="active">系统设置</li>
+  </ol>
+  </div>
+  <div class="panel-body">
+  
+  <!--提示框-->
+  <div  id="msg" class="alert alert-success alert-dismissable" style="display:none">
+     <!--<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>-->
+     <p id="msgcontent"></p>
+ </div>
+ <div id="process-div" class="progress progress-striped active" style="display:none">
+  <div id="process-bar" class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 5%">
+  </div>
+</div>
+
+<div id="customparams" class="tab-pane " >
+	<form id="form1" class="form-horizontal" role="form" action="#" type="post">
+ 	 <div class="form-group">
+    <div class="col-sm-10">
+      <button id="btn-update" type="button" class="btn btn-warning ">更改设置</button>
+      &nbsp;&nbsp;
+      <button id="btn-save" type="button" class="btn btn-success" style="display:none">保存设置</button>
+    </div>
+  </div>
+  <!--基本参数-->
+ <div class="panel panel-primary">
+  <div class="panel-heading">基本设置</div>
+  <div class="panel-body">
+	 <div class="form-group">
+    <label class="col-sm-3 control-label" for="UserDefaultPassword" >用户默认密码</label>
+    <div class="col-sm-6">
+    	<input id="UserDefaultPassword" type="text" class="form-control input-sm" name="UserDefaultPassword"  placeholder="UserDefaultPassword"  value="{{.UserDefaultPassword}}" disabled />
+      <p class="help-block">新建用户时,默认使用的密码</p>
+    </div>
+  </div>
+  </div>
+ </div>
+  <!--Gis设置-->
+ <div class="panel panel-primary">
+  <div class="panel-heading">GIS服务配置</div>
+  <div class="panel-body">
+	 <div class="form-group">
+    <label class="col-sm-3 control-label" for="DisableGoogleMap" >首页禁用Google地图</label>
+    <div class="col-sm-6">
+    	<label class="radio-inline">
+        <input type="radio" name="DisableGoogleMap"  value="false" {{if not .DisableGoogleMap}} checked {{end}} disabled> 使用
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="DisableGoogleMap"  value="true" {{if .DisableGoogleMap}} checked {{end}} disabled> 禁用
+      </label>
+      <p class="help-block">在不能连接互联网或者基础地图满足数据要求时,可以在首页上禁用Google地图.</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="UseGis" >是否使用GIS</label>
+    <div class="col-sm-6">
+    		<label class="radio-inline">
+        <input type="radio" name="UseGis"  value="true" {{if .UseGis}} checked {{end}} disabled> 使用
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="UseGis"  value="false" {{if not .UseGis}} checked {{end}} disabled> 不使用
+      </label>
+      <p class="help-block">是否有GIS服务提供.使用GIS还需要配置以下参数.(不使用,则默认使用地图模式,会有部分功能缺失)</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="GisInnerServiceUrl" >GIS服务的基本地址(内部,局域网地址)</label>
+    <div class="col-sm-6">
+    	<input id="GisInnerServiceUrl" type="text" class="form-control input-sm" name="GisInnerServiceUrl"  placeholder="GisInnerServiceUrl"  value="{{.GisInnerServiceUrl}}" disabled />
+      <p class="help-block">提供GIS服务器的内部服务地址,局域网内供应用服务器调用.(如在本机上:http://127.0.0.1:8080/geoserver/dqs/wms)</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="GisServiceUrl" >GIS服务的基本地址(互联网)</label>
+    <div class="col-sm-6">
+    	<input id="GisServiceUrl" type="text" class="form-control input-sm" name="GisServiceUrl"  placeholder="GisServiceUrl"  value="{{.GisServiceUrl}}" disabled />
+      <p class="help-block">提供GIS服务器的基本地址.(如:http://10.15.36.88:8080/geoserver/dqs/wms)</p>
+    </div>
+  </div>
+  <!--<div class="form-group">
+    <label class="col-sm-3 control-label" for="GisServiceParams" >GIS服务基本参数</label>
+    <div class="col-sm-6">
+    	<input id="GisServiceParams" type="text" class="form-control input-sm" name="GisServiceParams"  placeholder="GisServiceParams"  value="{{.GisServiceParams}}" disabled />
+      <p class="help-block">GIS服务基本地址之后的参数部分.(如:?service=WMS&version=1.1.0&request=GetMap)</p>
+    </div>
+  </div>
+  -->
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="GisLayerBasic" >GIS基础图层</label>
+    <div class="col-sm-6">
+    	<input id="GisLayerBasic" type="text" class="form-control input-sm" name="GisLayerBasic"  placeholder="GisLayerBasic"  value="{{.GisLayerBasic}}" disabled />
+      <p class="help-block">GIS服务的基本图层,即底图图层.该图层提供该地区的详细GIS数据.(如:dqs_layers)</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="GisLayerChina" >GIS全国概要图层</label>
+    <div class="col-sm-6">
+    	<input id="GisLayerChina" type="text" class="form-control input-sm" name="GisLayerChina"  placeholder="GisLayerChina"  value="{{.GisLayerChina}}" disabled />
+      <p class="help-block">提供一个概要的全国大范围内的粗略图层,供地震震中定位显示用.</p>
+    </div>
+  </div>
+  </div>
+ </div>
+ {{with .GisImageCfg}}
+ <!--Gis图片设置-->
+ <div class="panel panel-primary">
+  <div class="panel-heading">速报等值线图片生成配置</div>
+  <div class="panel-body">
+	 <div class="form-group">
+    <label class="col-sm-3 control-label" for="Format" >图片格式</label>
+    <div class="col-sm-6">
+    		<label class="radio-inline">
+        <input type="radio" name="Format"  value="image/png" {{if eq .Format "image/png"}} checked {{end}} disabled> PNG格式
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="Format"  value="image/jpeg" {{if eq .Format "image/jpeg"}} checked {{end}} disabled> JPG格式
+      </label>
+      <p class="help-block">生成的等值线图片格式.(默认是PNG格式)</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="SRS" >GIS坐标体系</label>
+    <div class="col-sm-6">
+    	<input id="SRS" type="text" class="form-control input-sm" name="SRS"  placeholder="SRS"  value="{{.SRS}}" disabled />
+      <p class="help-block">通常采用:EPSG:4326,与仪器设备提供的坐标系一致</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Height" >图片高度</label>
+    <div class="col-sm-6">
+    	<input id="Height" type="text" class="form-control input-sm" name="Height"  placeholder="Height"  value="{{.Height}}" disabled />
+      <p class="help-block">图片高度大小.</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Width" >图片宽度</label>
+    <div class="col-sm-6">
+    	<input id="Width" type="text" class="form-control input-sm" name="Width"  placeholder="Width"  value="{{.Width}}" disabled />
+      <p class="help-block">图片宽度大小</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="BBOX" >图片范围</label>
+    <div class="col-sm-6">
+    	<input id="BBOX" type="text" class="form-control input-sm" name="BBOX"  placeholder="BBOX"  value="{{.BBOX}}" disabled />
+      <p class="help-block">图片生成时涵盖的地理范围.视具体地市区域根据坐标系坐标调整.(格式为MinX,MinY,MaxX,MaxY)</p>
+    </div>
+  </div>
+  </div>
+ </div>
+ {{end}}
+{{with .MmsCfg}}
+ <!--彩信服务-->
+ <div class="panel panel-primary">
+  <div class="panel-heading">彩信服务</div>
+  <div class="panel-body">
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="MmsEnable" >彩信通知</label>
+    <div class="col-sm-6">
+    		<label class="radio-inline">
+        <input type="radio" name="MmsEnable"  value="true" {{if  .MmsEnable }} checked {{end}} disabled> 启用
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="MmsEnable"  value="false" {{if not .MmsEnable }} checked {{end}} disabled> 停用
+      </label>
+      <p class="help-block">速报生成后,是否向系统用户发送彩信通知.</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="ServiceUrl" >服务地址</label>
+    <div class="col-sm-6">
+    	<input id="ServiceUrl" type="text" class="form-control input-sm" name="ServiceUrl"  placeholder="ServiceUrl"  value="{{.ServiceUrl}}" disabled />
+      <p class="help-block">彩信网关接口地址.(默认采用漫道科技的彩信网关.http://sdk3.entinfo.cn:8060/webservice.asmx/mdMmsSend)</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="UserNo" >彩信服务账号</label>
+    <div class="col-sm-6">
+    	<input id="UserNo" type="text" class="form-control input-sm" name="UserNo"  placeholder="UserNo"  value="{{.UserNo}}" disabled />
+      <p class="help-block">彩信服务的账号.(需要向服务商申请,并付费)</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="Password" >彩信服务密码</label>
+    <div class="col-sm-6">
+    	<input id="Password" type="text" class="form-control input-sm" name="Password"  placeholder="Password"  value="{{.Password}}" disabled />
+      <p class="help-block">彩信服务密码.(彩信服务商提供,并可通过彩信服务商修改)</p>
+    </div>
+  </div>
+  </div>
+ </div>
+ {{end}} 
+{{with .MailCfg}}
+ <!--邮件服务-->
+ <div class="panel panel-primary">
+  <div class="panel-heading">邮件服务</div>
+  <div class="panel-body">
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="MailHost" >SMTP服务器地址</label>
+    <div class="col-sm-6">
+    	<input id="MailHost" type="text" class="form-control input-sm" name="MailHost"  placeholder="MailHost"  value="{{.MailHost}}" disabled />
+      <p class="help-block">邮件发送服务器(SMTP Server)地址</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="MailPort" >服务端口</label>
+    <div class="col-sm-6">
+    	<input id="MailPort" type="text" class="form-control input-sm" name="MailPort"  placeholder="MailPort"  value="{{.MailPort}}" disabled />
+      <p class="help-block">服务器服务端口,一般默认是25</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="MailAddr" >邮件账号</label>
+    <div class="col-sm-6">
+    	<input id="MailAddr" type="text" class="form-control input-sm" name="MailAddr"  placeholder="MailAddr"  value="{{.MailAddr}}" disabled />
+      <p class="help-block">用来发送邮件的账号</p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-3 control-label" for="NeedAuth" >是否要求验证</label>
+    <div class="col-sm-6">
+    		<label class="radio-inline">
+        <input type="radio" name="NeedAuth"  value="true" {{if  .NeedAuth }} checked {{end}} disabled> 是
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="NeedAuth"  value="false" {{if not .NeedAuth }} checked {{end}} disabled> 否
+      </label>
+      <p class="help-block">SMTP服务器是否要求用户验证.若验证,则需要提供用户名和密码</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="MailUser" >用户名</label>
+    <div class="col-sm-6">
+    	<input id="MailUser" type="text" class="form-control input-sm" name="MailUser"  placeholder="MailUser"  value="{{.MailUser}}" disabled />
+      <p class="help-block">邮件服务账号名称</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="MailPassword" >密码</label>
+    <div class="col-sm-6">
+    	<input id="MailPassword" type="text" class="form-control input-sm" name="MailPassword"  placeholder="MailPassword"  value="{{.MailPassword}}" disabled />
+      <p class="help-block">该账号的密码</p>
+    </div>
+  </div>
+  </div>
+ </div>
+ {{end}} 
+{{with .QuakeReportCfg}} 
+<!--地震报送服务-->
+ <div class="panel panel-primary">
+  <div class="panel-heading">地震数据报送设置</div>
+  <div class="panel-body">
+	<div class="form-group">
+    <label class="col-sm-3 control-label" for="ServiceURL" >服务接口地址</label>
+    <div class="col-sm-6">
+    	<input id="ServiceURL" type="text" class="form-control input-sm" name="ServiceURL"  placeholder="ServiceURL"  value="{{.ServiceURL}}" disabled />
+      <p class="help-block">接收数据的服务接口URL</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="SleepTime" >数据收集时间（分钟）</label>
+    <div class="col-sm-6">
+    	<input id="SleepTime" type="text" class="form-control input-sm" name="SleepTime"  placeholder="SleepTime"  value="{{.SleepTime}}" disabled />
+      <p class="help-block">接收地震事件后暂停一定时间后，收集数据后发送</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="TimeSpan" >数据时间宽度（分钟）</label>
+    <div class="col-sm-6">
+    	<input id="TimeSpan" type="text" class="form-control input-sm" name="TimeSpan"  placeholder="TimeSpan"  value="{{.TimeSpan}}" disabled />
+      <p class="help-block">基于地震事件前后一定时间范围内的报警数据</p>
+    </div>
+  </div>
+  </div>
+ </div>
+ {{end}}  
+</form>
+</div>
+
+
+</div> <!--end panel-body-->
+</div> <!--end panel-->
+</div>
+{{template "scripts"}}
+<script src="/static/js/validate.min.js"></script>
+<script src="/static/js/validate.additional-methods.min.js"></script>
+<script src="/static/js/validate.messages_zh.js"></script>
+<script src="/static/js/jquery.validate.bootstrap.popover.js"></script>
+<script>
+//初始化    
+$(document).ready(function(){
+	
+	//表单校验
+  $("#form1").validate({
+   rules: {
+     UserDefaultPassword: {
+      required: true,
+      alphanumeric:true,
+    },
+    UseGis: {
+      required: true
+    },
+    GisServiceUrl: {
+      required: true
+    },
+    GisServiceParams: {
+      required: true
+    },
+    GisLayerBasic: {
+      required: true
+    },
+    GisLayerChina: {
+      required: true
+    },
+    Format: {
+      required: true
+    },
+    width: {
+      required: true,
+      number:true
+    },
+    Height: {
+      required: true,
+      number:true
+    },
+    SRS: {
+      required: true
+    },
+    BBOX: {
+      required: true
+    },
+    MmsEnable: {
+      required: true
+    }
+    /*,
+    MailHost: {
+      required: true
+    },
+    MailPort: {
+      required: true,
+      digits:true
+    },
+    MailAddr: {
+      required: true,
+      email: true
+    },
+    NeedAuth: {
+      required: true
+    },
+    MailUser: {
+      required: true
+    },
+    MailPassword: {
+      required: true
+    }
+    */
+       
+  }
+});	
+
+    //设置参数按钮
+  var setchange=false;
+    $("#btn-update").bind('click',function(){
+         $("#btn-save").toggle();
+         if(setchange==false){
+         	setchange=true;
+         	$("#btn-update").text("取消更改");
+         	$("#form1  :text").attr('disabled',false);
+         	$("#form1  :checkbox").attr('disabled',false);
+         	$("#form1  :radio").attr('disabled',false);
+         	
+        }else{
+        	setchange=false;
+         	$("#btn-update").text("更改设置");
+         	$("#form1 :text").attr('disabled',true);
+         	$("#form1 :checkbox").attr('disabled',true);
+         	$("#form1  :radio").attr('disabled',true);
+        }
+    });
+   //提交操作
+ 	$("#btn-save").bind('click', function() {
+ 		if($("#form1").valid()){
+      $.ajax({
+             type: "PUT",
+             url: "/systemconfig",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             data: $("#form1").serialize() ,
+             success: function(json){
+               if(json.Ok==true){
+                    showSuccess("系统设置修改成功!");
+               	    $("#btn-update").trigger('click');
+                }else{
+                 showError(json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 showError("修改失败,报告管理员:"+textStatus);
+             }
+           });
+           
+           }else{
+  	      showWarning("请校正填写数据.");
+         }
+    });
+    
+});
+</script> 
+ {{end}}
+
+{{template "footer"}}

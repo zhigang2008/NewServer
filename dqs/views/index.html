@@ -1,0 +1,514 @@
+﻿ {{template "header" .}}
+<div style="padding:0px">
+ <div class="container" >
+ 	<div class="row" style="background-color:#eee;margin:0px;padding:5px;border-radius:3px;">
+   <div id="div-list" class="col-md-2">
+     <div id="devices-list">
+      <table id="devices-list-table" class="table table-hover table-bordered table-condensed" >
+       <thead>
+		   <tr>
+			   <th><span class="glyphicon glyphicon-tags text-muted"></span></th>
+			   <th>设备编号</th>
+			   <th>观测点</th>
+		   </tr>
+	     </thead>
+	     <tbody>
+	     	{{range $i,$v:=.devices}}
+	     	{{if lt $i 10}}
+	     	<tr style="cursor:pointer;">
+	     		<td >{{if .Online}}<span class="glyphicon glyphicon-refresh text-info"></span>{{else}}<span class="glyphicon glyphicon-refresh text-muted"></span>{{end}}</td>
+	     		<td onclick="javascript:showFeature('{{.SensorId}}');">{{.SensorId}}</td>
+	     		<td onclick="javascript:showFeature('{{.SensorId}}');">{{.CustomParams.SiteAliasName}}</td>
+	     	</tr>
+	     	{{end}}
+	     	{{end}}
+	     </tbody>	
+      </table>
+	     <div id="device-pager" class="pagination"></div>
+    </div>
+    
+    <div id="events-list">
+    	<!--<button type="button" class="btn btn-default btn-sm" >移除等值线图层</button>-->
+      <table id="events-list-table" class="table table-hover table-bordered table-condensed">
+       <thead>
+		   <tr onclick="javascript:removeWMSLayer();" style="cursor:alias;">
+			   <th><a href="javascript:removeWMSLayer();" data-toggle="tooltip"  data-placement="top" title="点击此栏可以移除等值线图层"><span class="glyphicon glyphicon-bell text-muted"></span></a></th>
+			   <th>震情时间</th>
+			   <th>报警</th>
+		   </tr>
+	     </thead>
+	     <tbody>
+        {{range $i,$v:=.events}}
+	     	{{if lt $i 5}}
+	     	<tr onclick="javascript:showEvent('{{.EventId}}');" style="cursor:pointer;">
+	     		<td>{{if .IsConfirm}}<span class="glyphicon glyphicon-flash text-info"></span>{{else}}<span class="glyphicon glyphicon-flash text-muted"></span>{{end}}</td>
+	     		<td>{{.EventTimeStr}}</td>
+	     		<td>{{.AlarmCount}}</td>
+	     	</tr>
+	     	{{end}}
+	     	{{end}}
+	     </tbody>	
+      </table>
+    </div>
+   </div>
+   <div id="map" class="col-md-10"  style="height:550px;border:#F6F6F6 solid 1px;"></div>
+   <div id="audioPlayer"></div> 
+  </div>
+  
+ </div>
+ 
+</div>
+
+{{template "scripts"}}
+<!--custom script include --
+<script type="text/javascript">
+   window.OpenLayers = [
+     "OpenLayers/Util.js",
+     "OpenLayers/BaseTypes.js"
+     ];
+</script>
+-->
+{{if .GoogleMap}}
+<script src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+{{end}}
+<script language="javascript" src="/static/js/bootstrap-paginator.min.js"></script>
+<script language="javascript" src="/static/js/openlayers/lib/OpenLayers.js"></script>
+<script language="javascript" src="/static/js/openlayers/lib/gaode.js"></script>
+<script language="javascript" src="/static/js/messenger/messenger.min.js"></script>
+<script language="javascript" src="/static/js/messenger/messenger-theme-future.js"></script>
+<script language="javascript" src="/static/js/jplayer/jquery.jplayer.min.js"></script>
+<script language="javascript">
+	Messenger.options = {
+    extraClasses: 'messenger-fixed messenger-on-bottom messenger-on-right',
+    theme: 'future'
+}
+</script>
+<script language="javascript">
+var map, basicLayer, vectorLayer,selector,wmsLayer;
+var sites=[];
+//最后的坐标
+var lastlng,lastlat;
+
+//部分控制参数
+var zoomSize=9;
+var epsg4326 =  new OpenLayers.Projection("EPSG:4326"); //WGS 1984 projection
+var projectTo =new OpenLayers.Projection('EPSG:900913');
+var restrictedRegion=new OpenLayers.Bounds(1000000.0,3400000,1260000,4400000.0);
+
+
+//feature select event
+function createPopup(site) {
+	  closeAllPopup(); 
+          
+	  content='<div class="markerContent"><b>'+site.attributes.sensorId+'</b><br>'+site.attributes.siteName;
+		if(site.attributes.extendParams.SiteAliasName){
+			content+='('+site.attributes.extendParams.SiteAliasName+')';
+		}
+   content+='<br>['+site.attributes.posLng+','+site.attributes.posLat+']';
+   
+	  var siteType=site.attributes.extendParams.SiteType;
+   if(siteType){
+      	if(siteType=="0"){
+      		content+='<br>场地类型:土壤';
+      	}else if(siteType=="1"){
+      		content+='<br>场地类型:软岩石';
+      	}else{
+      		content+='<br>场地类型:硬岩石';
+      	}
+   }
+   var accType=site.attributes.extendParams.Accelerometer;
+   if(accType&&accType=="0"){
+     content+='<br>加速度计型号:MEMS';
+   }else{
+   	 content+='<br>加速度计型号:力平衡';
+   }
+   
+		if(site.attributes.initTime){
+			content+='<br><span class="text-danger">时刻:'+site.attributes.initTime+' 仪器烈度:'+site.attributes.Intensity+'</span>';
+			content+='<br><span class="text-danger">PGA:'+site.attributes.PGA+' SI:'+site.attributes.SI+'</span>';
+			if(site.attributes.HasWaveInfo && site.attributes.HasWaveInfo==true){
+			  content+='<br><a target="_blank" href="/waveinfo/'+site.attributes.sensorId+'/'+site.attributes.SeqNo+'"><span class="glyphicon glyphicon-random">&nbsp;波形图</span></a>';
+		  }
+		}
+		content+='</div>';
+     
+    site.popup = new OpenLayers.Popup.FramedCloud("pop",
+          site.geometry.getBounds().getCenterLonLat(),
+          null,
+          content,
+          null,
+          true,
+          function() { selector.unselectAll();    	}
+      );
+      map.addPopup(site.popup);
+    }
+//feature unselect event
+function destroyPopup(feature) {
+      feature.popup.destroy();
+      feature.popup = null;
+}
+//添加观测点
+function addFeature(sid,dname,lng,lat,sendExtendParams){
+	
+  var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point(lng,lat).transform(epsg4326, projectTo),
+            {sensorId:sid,siteName:dname,posLng:lng,posLat:lat,extendParams:sendExtendParams} ,
+            {externalGraphic: '/static/image/marker-blue.png', graphicHeight: 25, graphicWidth: 25, graphicXOffset:-12, graphicYOffset:-25  }
+        );
+  feature.fid=sid;   
+  vectorLayer.addFeatures(feature);
+  lastlng=lng;
+  lastlat=lat;
+ // sites.push(sid);
+}
+//关闭所有的popup
+function closeAllPopup(){
+	$.each(sites,function(i,item){
+			var site=vectorLayer.getFeatureByFid(item);
+			if(site && site.popup){
+				destroyPopup(site);
+			}
+		});
+}
+//显示位置
+function showFeature(sid){
+	//关闭所有窗口
+	closeAllPopup();
+	var site=vectorLayer.getFeatureByFid(sid);
+	if(site){
+		content='<div class="markerContent"><b>'+site.attributes.sensorId+'</b><br>'+site.attributes.siteName;
+		if(site.attributes.extendParams.SiteAliasName){
+			content+='('+site.attributes.extendParams.SiteAliasName+')';
+		}
+   content+='<br>['+site.attributes.posLng+','+site.attributes.posLat+']';
+   //
+   var siteType=site.attributes.extendParams.SiteType;
+   if(siteType){
+      	if(siteType=="0"){
+      		content+='<br>场地类型:土壤';
+      	}else if(siteType=="1"){
+      		content+='<br>场地类型:软岩石';
+      	}else{
+      		content+='<br>场地类型:硬岩石';
+      	}
+   }
+   var accType=site.attributes.extendParams.Accelerometer;
+   if(accType&&accType=="0"){
+     content+='<br>加速度计型号:MEMS';
+   }else{
+   	 content+='<br>加速度计型号:力平衡';
+   }
+
+	 if(site.attributes.initTime){
+			content+='<br><span class="text-danger">时刻:'+site.attributes.initTime+' 烈度:'+site.attributes.Intensity+'</span>';
+			content+='<br><span class="text-danger">PGA:'+site.attributes.PGA+' SI:'+site.attributes.SI+'</span>';
+			if(site.attributes.HasWaveInfo && site.attributes.HasWaveInfo==true){
+			  content+='<br><a target="_blank" href="/waveinfo/'+site.attributes.sensorId+'/'+site.attributes.SeqNo+'"><span class="glyphicon glyphicon-random">&nbsp;波形图</span></a>';
+		  }
+		}
+		content+='</div>';
+		site.popup = new OpenLayers.Popup.FramedCloud("showpop",
+          site.geometry.getBounds().getCenterLonLat(),
+          null,
+          content,
+          null,
+          true,
+          function() { 
+          	site.popup.destroy();
+            site.popup = null; }
+      );
+    
+     map.setCenter(new OpenLayers.LonLat(site.attributes.posLng, site.attributes.posLat).transform(epsg4326,projectTo));
+    // map.setCenter(new OpenLayers.LonLat(site.attributes.posLng, site.attributes.posLat), zoomSize+1);
+     map.addPopup(site.popup);
+	}
+} 
+
+//重置观测点
+function resetMarker(sid){
+	var marker = vectorLayer.getFeatureByFid(sid);
+	marker.attributes.initTime=null;
+	marker.attributes.PGA=null;
+	marker.attributes.SI=null;
+	marker.attributes.Intensity=null;
+	marker.attributes.SeqNo=null;
+	marker.attributes.HasWaveInfo=null;
+	marker.style.externalGraphic="/static/image/marker-blue.png";
+	vectorLayer.drawFeature(marker);
+}
+//更新观测点
+function updateMarker(item){
+	var marker = vectorLayer.getFeatureByFid(item.SensorId);
+	if(marker){
+	  marker.style.externalGraphic="/static/image/star.gif";
+	  marker.attributes.initTime=item.InitTime;
+	  marker.attributes.PGA=item.PGA;
+	  marker.attributes.SI=item.SI;
+	  marker.attributes.Intensity=item.Intensity;
+	  marker.attributes.HasWaveInfo=item.HasWaveInfo;
+	  marker.attributes.SeqNo=item.SeqNo;
+	  vectorLayer.drawFeature(marker);
+  }else{
+ 	 //添加新增的站点
+	 var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point(item.Longitude,item.Latitude).transform(epsg4326, projectTo),
+            {sensorId:item.SensorId,siteName:"",posLng:item.Longitude,posLat:item.Latitude} ,
+            {externalGraphic: '/static/image/star.gif', graphicHeight: 25, graphicWidth: 25, graphicXOffset:-12, graphicYOffset:-25  }
+        );
+   feature.fid=item.SensorId;   
+   vectorLayer.addFeatures(feature);
+   sites.push(item.SensorId);
+  }
+ //提示信息
+    Messenger().post({
+     message: item.SensorId+' [时刻:'+item.InitTime+' 烈度:'+item.Intensity+']',
+      type: 'error',
+      showCloseButton: true
+     });
+}
+
+//展示事件的等值线
+function showEvent(sid){
+	//提示信息
+  /*Messenger().post({
+  message: '显示该事件的等值线,建设中...',
+  type: 'info',
+  showCloseButton: true
+ });
+ */
+ if(wmsLayer){
+ 	wmsLayer.destroy();
+ }
+ $.getJSON("/eventlinejson/"+sid, function(data){
+ 	 wmsLayer = new OpenLayers.Layer.WMS("烈度等值线", 
+    "{{rawURL .gisServiceUrl}}",
+		{
+			//layers: '{{.gisBasicLayer}}',
+			TRANSPARENT: true,
+			STYLES: '',
+			//CRS:'EPSG:4326',
+			TARGETCRS:'EPSG:900913',
+			format: 'image/png',
+			//VALUE_COLUMN:"AREA",
+			SIMPLIFY_METHOD: 1,
+			SIMPLIFY_SIZE:data.dataSize,
+			DATA_ARRAY:data.dataArray,
+			'INTERVALS[]':"0,1,2,3,4,5,6,7,8,9,10,11,12",
+			'INTERVALS_COLORS[]':"0xffffff01,0xe9ffd255,0xe9ffd299,0xe9ffd2aa,0xe9ffd2bb,0xe9ffd2cc,0xe9ffbeff,0xa3ff73ff,0x98e600ff,0xffcc00ff,0xff6600ff,0xa80000ff,0x343434ff",
+			RENDERER_TYPE:2,
+			INTERPOLATION_STRATEGY:2,
+			RADIUS:40,
+			SERVICE:"AMS"
+		},
+		{
+			singleTile: true,
+			//transparent: true,
+			isBaseLayer:false, 
+			//opacity: 0.8,
+			ratio: 1} 
+	);
+ map.addLayer(wmsLayer);
+ //map.raiseLayer(vecLyr, map.layers.length);
+ map.setLayerIndex(wmsLayer, 9999);
+ });
+}
+//移除等值线图层
+function removeWMSLayer(){
+	if(wmsLayer){
+ 	wmsLayer.destroy();
+ }
+}
+//定时查询信息
+function timeQueryData(){
+	//定时获取报警信息
+	$.getJSON("/realtime_alarm?time={{.queryTimeSpan}}", function(data){
+		//重置所有站点状态
+		$.each(sites,function(i,item){
+			resetMarker(item);
+		});
+		//更新报警信息
+   $.each(data.data, function(i,item){
+   	   updateMarker(item);
+   });
+   if(data.count >0 ){
+   	//播放报警声
+    $("#audioPlayer").jPlayer("play");
+   }
+  });
+  
+  //查询事件
+  var eventtablestr="";
+  $.getJSON("/eventjsonlist?pagesize=5", function(data){
+   $.each(data, function(i,item){
+   	  eventtablestr+="<tr  style=\"cursor:pointer;\" onclick=\"javascript:showEvent('"+item.EventId+"');\"><td><span class=\"glyphicon glyphicon-flash ";
+   	 if(item.IsConfirm==true){
+   	 	 eventtablestr+=" text-info ";
+   	 	}else{
+   	 		eventtablestr+=" text-muted ";
+   	 	}
+   	 	eventtablestr+=" \"></span></td> <td>"+item.EventTimeStr+"</td><td>"+item.AlarmCount+"</td></tr>";
+   });
+   $("#events-list-table").find('tbody').html(eventtablestr);
+ 
+  });
+}
+
+//设备翻页
+function PageDevice(page){
+	var newtablestr="";
+	$.getJSON("/listdevice?pagesize=10&page="+page, function(data){
+		//更新设备信息
+   $.each(data.Data, function(i,item){
+   	 newtablestr+="<tr style=\"cursor:pointer;\"><td><span class=\"glyphicon glyphicon-refresh ";
+   	 if(item.Online==true){
+   	 	 newtablestr+=" text-info ";
+   	 	}else{
+   	 		newtablestr+=" text-muted ";
+   	 	}
+   	 	newtablestr+=" \"></span></td> <td onclick=\"javascript:showFeature('"+item.SensorId+"');\">"+item.SensorId+"</td>	<td onclick=\"javascript:showFeature('"+item.SensorId+"');\">"+item.CustomParams.SiteAliasName+"</td></tr>";
+   });
+   $("#devices-list-table").find('tbody').html(newtablestr);
+  });
+ 
+}
+  //初始化加载
+$(document).ready(function() {
+	//设备列表分页
+	 var options = {
+            currentPage: 1,
+            totalPages: {{.devicePages}},
+            numberOfPages:5,
+            alignment:'center',
+            size:'mini',
+            shouldShowPage:function(type, page, current){
+                switch(type)
+                {
+                    case "first":
+                    case "last":
+                        return false;
+                    default:
+                        return true;
+                }
+            },
+            onPageClicked: function(e,originalEvent,type,page){
+                PageDevice(page);
+            }
+        }
+   $('#device-pager').bootstrapPaginator(options);
+	
+	//OpenLayers.Lang.setCode("zh-CN");
+  map = new OpenLayers.Map('map',
+         {
+         	projection: projectTo,//投影规则  
+          displayProjection: epsg4326//,
+          //numZoomLevels: 15,
+          //maxScale: 10000         
+         }
+        );
+  //projectTo = map.getProjectionObject();     
+  
+  {{if .GoogleMap}}
+  
+  var googlePhysical=new OpenLayers.Layer.Google("Google 地形图",{type: google.maps.MapTypeId.TERRAIN});
+  var googleStreets=new OpenLayers.Layer.Google("Google 城区图");
+  //var googleHybird=new OpenLayers.Layer.Google("Google Hybrid", {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20});
+  var googleSatellite=new OpenLayers.Layer.Google("Google 卫星图",{type: google.maps.MapTypeId.SATELLITE});
+  map.addLayers([googleStreets,googlePhysical,googleSatellite]);
+  
+  var bounds = new OpenLayers.Bounds({{rawJS .mapExtend}});
+  bounds.transform(epsg4326, projectTo);
+  map.maxExtent=bounds;
+  map.restrictedExtent=bounds;
+  {{end}}
+  
+  //高德地图
+var gaodelayer = new OpenLayers.Layer.GaodeCache("高德地图", 
+               [ "http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7",
+                "http://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7",
+                "http://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7",
+                "http://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7"
+                ]
+                );  
+ map.addLayer(gaodelayer);
+   
+ //基础地图
+ basicLayer = new OpenLayers.Layer.WMS("基础地图",
+          "{{rawURL .gisServiceUrl}}",
+           {
+          	layers: "{{.gisBasicLayer}}",
+          	service:"WMS",
+          	version:"1.1.0",
+          	//crs:'EPSG:900913',
+          	request:"GetMap"
+           },
+           {
+			      singleTile: true,
+						isBaseLayer:true 
+			      }
+           );
+  map.addLayer(basicLayer);      
+ /* demLayer = new OpenLayers.Layer.WMS("基础地形图",
+          "{{rawURL .gisServiceUrl}}",
+           {
+          	layers: "dqs_dem",
+          	service:"WMS",
+          	//crs:'EPSG:900913',
+          	version:"1.1.0",
+          	request:"GetMap"
+           },
+           {
+			      singleTile: true,
+						isBaseLayer:true 
+			      }
+           );
+   */        
+   
+  //feature 图层          
+  vectorLayer = new OpenLayers.Layer.Vector("观测点");
+  //加载设备列表
+	{{range $i,$v:=.allDevices}} 
+		  addFeature({{.SensorId}},{{.SetParams.SiteName}},{{.SetParams.Longitude}},{{.SetParams.Latitude}},{SiteType:{{.SetParams.SiteType}},ObserveObject:{{.SetParams.ObserveObject}},Accelerometer:{{.SetParams.Accelerometer}},Direction:{{.SetParams.Direction}},SiteAliasName:{{.CustomParams.SiteAliasName}}});
+		  sites.push("{{.SensorId}}");
+	{{end}}
+	map.addLayer(vectorLayer);
+	
+	//控制器
+  selector=new OpenLayers.Control.SelectFeature(vectorLayer, { onSelect: createPopup, onUnselect: destroyPopup });	
+  map.addControl(selector);
+  selector.activate();
+  
+  map.addControl(new OpenLayers.Control.LayerSwitcher({'ascending':false}));
+  //map.addControl(new OpenLayers.Control.PanZoom());
+  map.addControl(new OpenLayers.Control.MousePosition());
+  map.addControl(new OpenLayers.Control.ScaleLine());
+  //map.addControl(new OpenLayers.Control.OverviewMap());
+  
+  //map.zoomToMaxExtent();
+  map.setCenter(new OpenLayers.LonLat(lastlng, lastlat).transform(epsg4326,projectTo), zoomSize);
+ 
+ //加载付费信息
+ {{if .hasPayment}}
+   Messenger().post({
+     message: '有 {{.paymentCount}} 设备费用即将到期,请尽快续费.&nbsp; <a href="/payment" target="_blank" class="glyphicon glyphicon-th-list"></a>',
+      type: 'info',
+      showCloseButton: true
+     });
+ {{end}}
+ 
+ //加载背景音乐
+ $("#audioPlayer").jPlayer({
+   ready: function () {
+    $(this).jPlayer("setMedia", {
+     mp3: "/static/media/alarm.mp3"
+    });
+   },
+   swfPath: "/static/js/jplayer",
+   supplied: "mp3,m4a, oga"
+  });
+});
+
+//执行定时查询
+	setInterval("timeQueryData()",60000*{{.queryTimeSpan}}); 
+</script>
+
+{{template "footer"}}

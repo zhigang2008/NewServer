@@ -1,0 +1,224 @@
+﻿{{template "header" .}}
+ 
+ {{$curUser := .CurrentUser}}
+ {{with .pagedata}}
+ {{$pagesize := .PageSize}}
+ {{$curpage :=.CurrentPage}}
+ {{$params := .QueryParams}}
+ {{$status := .QueryParams.online}}
+<div class="container">
+ <div class="panel panel-default">
+  <!-- Default panel contents -->
+ <div class="panel-heading">
+   {{if hasrole $curUser.Roles "role_admin" "role_device"}}
+ 		 <a href="/adddevice" data-toggle="tooltip" data-placement="bottom" title="添加设备" class="btn btn-success btn-sm">添加设备</a>
+   {{end}}
+  </div>
+  <!-- Table -->
+  <table class="table table-striped table-bordered table-hover">
+	<thead>
+		<tr>
+			<th>序号</th>
+			<th>设备编号</th>
+			<th>站点编号</th>
+			<th>观测点</th>
+			<th>注册时间</th>
+		  <th>在线状态
+		  	<span style="margin-left:15px;">
+		  		<select id="statuschange" class="selectpicker" data-width="90%">
+          <option value="2" data-content="<span class='label label-primary'>全部</span>">全部</option>
+          <option value="1" {{if compare $status "true" }} selected {{end}} data-content="<span class='label label-success'>在线</span>">在线</option>
+          <option value="0" {{if compare $status "false" }} selected {{end}} data-content="<span class='label label-default'>离线</span>">离线</option>
+         </select>
+       </span>
+      </th>
+     <th>更新时间</th>
+     <th>网络类型</th>
+     <th>设备状态</th>
+     <th>最后连接地址</th>
+     <th>操作</th>
+    </tr>
+  </thead>
+	<tbody>
+		{{range $i,$v:=.Data}}
+	 	<tr class="success">
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{seqno $i $pagesize $curpage}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{.SensorId}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{.SetParams.SiteName}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{.CustomParams.SiteAliasName}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{dateformat .RegisterTime "2006-01-02 15:04:05"}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{if .Online}}<span class="label label-success">在线</span>{{else}}<span class="label label-default">离线</span> {{end}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{dateformat .UpdateTime "2006-01-02 15:04:05"}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{.CustomParams.NetType}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{if eq .CustomParams.NotUse true}}[停用]{{else}}活动{{end}}</td>
+	 		<td onclick="javascript:$('#{{.SensorId}}').toggle();">{{.RemoteAddr}}</td>
+	 		<td style="font-size:120%">
+	 			<a href="/alarm?sensorid={{.SensorId}}" data-toggle="tooltip" data-placement="bottom" title="报警信息"><span class="glyphicon glyphicon-bell"></span></a> / 
+	 			<a href="/location/{{.SensorId}}" data-toggle="tooltip" data-placement="bottom" title="设备定位"><span class="glyphicon glyphicon-map-marker"></span></a>
+       {{if hasrole $curUser.Roles "role_admin" "role_device"}}
+	 			 / <a href="/device/{{.SensorId}}" data-toggle="tooltip" data-placement="bottom" title="更新设置"><span class="glyphicon glyphicon-cog"></span></a> /
+	 			<a href="javascript:DeleteDevice('{{.Id.Hex}}','{{.SensorId}}');" data-toggle="tooltip" data-placement="bottom" title="删除"><span class="glyphicon glyphicon-remove"></span></a> 
+       {{end}}
+      </td>
+	 	</tr>
+	 	<!--详细信息(隐藏)-->
+	  <tr id="{{.SensorId}}"  style="display:none">
+  		<td class="well" colspan="11">
+	  		<table class="table table-condensed">
+	  			<tr class="active">
+	  				<td>编号:{{.SensorId}}</td>
+	  				<td>站点:{{.CustomParams.SiteAliasName}}[{{.SetParams.SiteName}}]</td>
+	  				<td>注册时间:{{dateformat .RegisterTime "2006-01-02 15:04:05"}}</td>
+	  				<td>经度:{{.SetParams.Longitude}}</td>
+	  				<td>纬度:{{.SetParams.Latitude}}</td>
+	  				<td>场地类型:{{if eq .SetParams.SiteType 0}} 土壤 {{else if eq .SetParams.SiteType 1}} 软岩石 {{else if eq .SetParams.SiteType 2}} 硬岩石 {{end}} </td>
+	  				<td>观测对象:{{if eq .SetParams.ObserveObject 0}} 深井 {{else if eq .SetParams.ObserveObject 1}} 自由地表 {{end}}</td>
+	  				<td>加速度计型号:{{if eq .SetParams.Accelerometer 0}} MEMS {{else if eq .SetParams.Accelerometer 1}} 力平衡 {{end}}</td>
+	  			</tr>
+	  			{{with .SetParams}}
+	  			<tr class="active">
+	  				<td>安装方向:{{if eq .Direction 0}} 南北向 {{else if eq .Direction 1}} 东西向 {{end}}</td>
+	  				<td>量程选择:{{if eq .RangeType 0}}±1.5g{{else if eq .RangeType 1}}±2g{{else if eq .RangeType 2}}±4g{{else if eq .RangeType 3}}±6g{{end}}</td>
+	  				<td>采样周期:{{if eq .Period 0.0}}0.002s{{else if eq .Period 1.0}}0.005s{{else if eq .Period 2.0}}0.01s{{else if eq .Period 3.0}}0.02s{{end}}</td>
+	  				<td>行政区划:{{.RegionCode}}</td>
+	  				<td>预留一:{{.Custom1}}</td>
+	  				<td>预留二:{{.Custom2}}</td>
+	  				<td>PGA触发:{{if eq .PGATrigger 1}}是{{else}}否{{end}}</td>
+	  				<td>PGA阀值:{{.PGATrgThreshold}}</td>
+	  			</tr>
+	  			<tr class="active">
+	  				<td>SI触发:{{if eq .SITrigger 1}}是{{else}}否{{end}}</td>
+	  				<td>SI阀值:{{.SITrgThreshold}}</td>
+	  				<td>组合触发:{{if eq .CombTrigger 0}}不组合{{else if eq .CombTrigger 1 }}逻辑"或"{{else if eq .CombTrigger 2 }}逻辑"与"{{end}}</td>
+	  				<td>预留触发:{{if eq .ReserveTrigger 1}}是{{else}}否{{end}}</td>
+	  				<td>预留阀值:{{.ReserveTrgThreshold}}</td>
+	  				<td>PGA报警:{{if eq .PGAAlert 1}}是{{else}}否{{end}}</td>
+	  				<td>PGA报警阀值:{{.PGAAlertThreshold}}</td>
+	  				<td>SI报警:{{if eq .SIAlert 1}}是{{else}}否{{end}}</td>
+	  			</tr>
+	  			<tr class="active">
+	  				<td>SI报警阀值:{{.SIAlertThreshold}}</td>
+	  				<td>组合报警:{{if eq .CombAlert 0}}不组合{{else if eq .CombAlert 1 }}逻辑"或"{{else if eq .CombAlert 2 }}逻辑"与"{{end}}</td>
+	  				<td>预留报警:{{if eq .ReserveAlert 1}}是{{else}}否{{end}}</td>
+	  				<td>预留报警阀值:{{.ReserveAlertThreshold}}</td>
+	  				<td>DA1:{{if eq .DA1  1}}PGA输出{{else}}SI输出{{end}}</td>
+	  				<td>DA2:{{if eq .DA2  1}}PGA输出{{else}}SI输出{{end}}</td>
+	  				<td>IO1:{{if eq .IO1  1}}无故障{{else}}有故障{{end}}</td>
+	  				<td>IO2:{{if eq .IO2  1}}无故障{{else}}有故障{{end}}</td>
+	  			</tr>
+	  			{{end}}
+	  			{{with .CustomParams}}
+	  			<tr class="active">
+	  				<td>安装日期:{{.InstallDate}}</td>
+	  				<td>安装人员:{{.Installer}}</td>
+	  				<td>联系人:{{.Contact}}</td>
+	  				<td>固定电话:{{.Telphone}}</td>
+	  				<td>移动电话:{{.Mobile}}</td>
+	  				<td>维护日期:{{.MaintainDate}}</td>
+	  				<td>维护人:{{.MaintainPeole}}</td>
+	  				<td>网络类型:{{.NetType}}</td>
+	  			</tr>
+	  			<!--3G信息-->
+	  			{{if eq .NetType "3G"}}
+	  			 {{with .WirelessTypeInfo}}
+	  			  <tr class="active">
+	  				<td>运营商:{{.NetOperator}}</td>
+	  				<td>用户号码:{{.NetNo}}</td>
+	  				<td>资费标准:{{.NetTariff}}</td>
+	  				<td>包月流量:{{.NetTraffic}}</td>
+	  				<td>开卡日期:{{.StartDate}}</td>
+	  				<td>有效期至:{{dateformat .ValidDate "2006-01-02"}}</td>
+	  				<td>&nbsp;</td>
+	  				<td>&nbsp;</td>
+	  			 </tr>
+	  			 {{end}}
+	  			{{else}}
+	  			 {{with .WireTypeInfo}}
+	  			  <tr class="active">
+	  				 <td>IP类型:{{if eq .IPType "D"}}动态IP{{else}}静态IP{{end}}</td>
+	  				 <td>IP地址:{{.IPAddress}}</td>
+	  				 <td>子网掩码:{{.IPMask}}</td>
+	  				 <td>网关:{{.GateWay}}</td>
+	  				 <td>DNS:{{.DNS}}</td>
+	  				 <td>&nbsp;</td>
+	  				 <td>&nbsp;</td>
+	  				 <td>&nbsp;</td>
+	  			  </tr>
+	  			 {{end}}
+	  			{{end}}
+	  			{{end}}
+        </table>
+	    </td>	
+	  </tr>
+   {{end}}
+ </tbody> 
+	</table>
+	
+  <div class="panel-footer" style="padding:10px 15px 25px;">
+   <span >{{.CurrentPage}} / {{.PageCount}} 页  [共 {{.Count}} 记录] </span>
+   <span class="pull-right">
+   	<ul class="pagination" style="margin:1px;padding-top:0px;">
+      <li><a href="{{"/device?page=1&pagesize="|html}}{{.PageSize}}{{purl $params }}">&laquo;</a></li>
+      {{range .NavPages}}
+        <li {{if compare . $curpage}} class="active" {{end}} ><a href="{{"/device?page="|html}}{{.}}{{"&pagesize="|html}}{{$pagesize}}{{purl $params}}">{{.}}</a></li>
+       {{end}}
+      <li><a href="{{"/device?page="|html}}{{.PageCount}}{{"&pagesize="|html}}{{.PageSize}}{{purl $params}}">&raquo;</a></li>
+     </ul>
+   </span>
+  </div>
+  
+</div>
+</div>
+
+{{template "scripts"}}
+<script src="/static/js/bootbox.min.js"></script>
+<script>
+	function DoDeleteDevice(objectid){
+		$.ajax({
+             type: "DELETE",
+             url: "/device/"+objectid,
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             success: function(json){
+               if(json.Ok==true){
+                   bootbox.alert("删除成功!",function(){
+                   	 window.location.reload(true);
+                   });
+                }else{
+                 bootbox.alert("删除失败:"+json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 bootbox.alert("更改失败,报告管理员:"+textStatus);
+             }
+           });
+	}
+	
+function DeleteDevice(objectid,sid){
+		bootbox.confirm("你确定删除设备["+sid+"]?",function(result){
+			if(result==true){
+				DoDeleteDevice(objectid);
+			}else{
+				return;
+			}
+		});
+	}
+	
+$(document).ready(function() {
+  //$('.selectpicker').selectpicker({});
+  $('#statuschange').change( function(){
+  	var p=$(this).children('option:selected').val(); 
+  	if(p==0){
+  		window.location.href='{{"/device?pagesize="|html}}{{.PageSize}}{{"&online=false"|html}}';
+  	}else if(p==1){
+  		window.location.href='{{"/device?pagesize="|html}}{{.PageSize}}{{"&online=true"|html}}';
+  	}else if(p==2){
+  		window.location.href='{{"/device?pagesize="|html}}{{.PageSize}}';
+  	}
+  });
+  });
+</script>
+{{end}}
+
+{{template "footer"}}

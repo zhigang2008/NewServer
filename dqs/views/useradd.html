@@ -1,0 +1,187 @@
+﻿{{template "header" .}}
+ 
+<div class="container">
+	 <div class="panel panel-info">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+  	<ol class="breadcrumb">
+     <li><a href="/"><span class="glyphicon glyphicon-home"></span>首页</a></li>
+     <li><a href="/user">用户列表</a></li>
+     <li class="active">添加用户</li>
+  </ol>
+  </div>
+  <div class="panel-body">
+  <!--提示框-->
+  <div  id="msg" class="alert alert-success alert-dismissable" style="display:none">
+     <!--取消关闭按钮
+     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+     -->
+     <p id="msgcontent"></p>
+ </div>
+ <!--
+ <div id="process-div" class="progress progress-striped active" style="display:none">
+  <div id="process-bar" class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 5%">
+  </div>
+</div>
+-->
+ <form id="userform" class="form-horizontal" role="form" action="#" type="post">
+ 	 <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button id="saveuser" type="button" class="btn btn-success btn-lg">保&nbsp;&nbsp;存</button>
+     </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="UserId" >用户ID*</label>
+    <div class="col-sm-6">
+      <input id="UserId" type="text" class="form-control" name="UserId"  placeholder="用户ID"  autofocus />
+      <p class="help-block">请选择一个易记的名字,此名字将作为登陆主ID.(4~16位英文字母和数字组成)</p>
+    </div>
+  </div>
+ <div class="form-group">
+    <label class="col-sm-2 control-label" for="UserName" >真实姓名*</label>
+    <div class="col-sm-6">
+      <input id="UserName" type="text" class="form-control" name="UserName"  placeholder="用户真实姓名"  />
+      <p class="help-block"></p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="Email" >Email*</label>
+    <div class="col-sm-6">
+      <input id="Email" type="text" class="form-control" name="Email"  placeholder="电子邮件地址"  />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Phone" >电话</label>
+    <div class="col-sm-6">
+      <input id="Phone" type="text" class="form-control" name="Phone"  placeholder="座机"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Mobile" >手机</label>
+    <div class="col-sm-6">
+      <input id="Mobile" type="text" class="form-control" name="Mobile"  placeholder="手机"  />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="UserTitle" >头衔</label>
+    <div class="col-sm-6">
+      <input id="UserTitle" type="text" class="form-control" name="UserTitle"  placeholder="头衔"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Addr" >地址</label>
+    <div class="col-sm-6">
+      <input id="Addr" type="text" class="form-control" name="Addr"  placeholder="地址"   />
+      <p class="help-block"></p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="col-sm-2 control-label" for="Report" >速报接收</label>
+    <div class="col-sm-6">
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="ReportMail" value="true" /> 邮件速报
+      </label>
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="ReportPhone" value="true" /> 手机速报
+      </label>
+    </div>
+ </div>
+   <div class="form-group">
+    <label class="col-sm-2 control-label" for="Roles" >角色</label>
+    <div class="col-sm-6">
+      
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="Roles" value="role_user" checked> 普通用户
+      </label>
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="Roles" value="role_device" >设备管理员
+      </label>
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="Roles" value="role_report" >速报管理员
+      </label>
+      <label class="checkbox-inline">
+         <input type="checkbox"  name="Roles" value="role_admin"> 系统管理员
+      </label>
+    </div>
+  </div>
+</form>
+
+</div> <!--end panel-body-->
+</div> <!--end panel-->
+</div>
+{{template "scripts"}}
+<script src="/static/js/validate.min.js"></script>
+<script src="/static/js/validate.additional-methods.min.js"></script>
+<script src="/static/js/validate.messages_zh.js"></script>
+<script src="/static/js/jquery.validate.bootstrap.popover.js"></script>
+<script>
+ $(document).ready(function() {	
+  var form = $("#userform");
+  form.validate({
+  rules: {
+    UserId: {
+      required: true,
+      rangelength: [4, 16],
+      alnum:true
+    },
+    UserName: {
+      required: true,
+      chinese: true
+    },
+    Email: {
+      required: true,
+      email: true
+    },
+    Phone: {
+      phone: true
+    },
+    Mobile: {
+      mobile: true
+    },
+    Roles: {
+      required: true
+    },
+    Addr: {
+      maxlength: 100
+    },
+    UserTitle: {
+      maxlength: 50
+    }
+  }
+});	
+  
+  //提交操作
+ 	$("#saveuser").bind('click', function() {
+ 		if(form.valid()){
+      $.ajax({
+             type: "POST",
+             url: "/user",
+             dataType:"json",
+             async: true,
+             timeout: 60000,
+             data: $("#userform").serialize() ,
+             success: function(json){
+               if(json.Ok==true){
+                    showSuccess("用户添加成功!");
+               	 
+                }else{
+                 showError(json.Msg);
+                }
+              },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 showError("保存失败,报告管理员:"+textStatus);
+             }
+           });
+           
+           }else{
+  	      showWarning("请校正填写数据.");
+         }
+    });
+  
+});
+</script>
+{{template "footer"}}
