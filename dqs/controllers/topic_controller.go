@@ -10,7 +10,7 @@ type TopicController struct {
 	BaseController
 }
 
-func (this *TopicController) Get() {
+func (this *TopicController) TopicView() {
 	this.Data["title"] = "专题图"
 	this.Data["author"] = "wangzhigang"
 
