@@ -57,7 +57,6 @@ func routeConfig() {
 	beego.Router("/reportverifyandsend/:id", &controllers.ReportController{}, "*:SetVerifyAndSend")
 	beego.Router("/reportdirectsend/:id", &controllers.ReportController{}, "*:DirectSend")
 	beego.Router("/reportresend/:id", &controllers.ReportController{}, "*:ReSend")
-
 	//专题图
 	beego.Router("/topic", &controllers.TopicController{}, "*:TopicView")
 
