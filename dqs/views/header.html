@@ -12,6 +12,7 @@
 <link href="/static/css/bootstrap-select.min.css" rel="stylesheet" media="screen">
 <link href="/static/css/steven.css" rel="stylesheet" media="screen">
 <link href="/static/css/daterangepicker-bs3.css" rel="stylesheet" media="screen">
+<link href="/static/css/datetimepicker.css" rel="stylesheet" media="screen">
 <link href="/static/css/messenger/messenger.css" rel="stylesheet" media="screen">
 <link href="/static/css/messenger/messenger-theme-future.css" rel="stylesheet" media="screen">
 </head>
@@ -50,6 +51,7 @@
                <li><a href="/analyze">震情分析</a></li>
                <li><a href="/reportlist">速报管理</a></li>
                <li><a href="/alarm">设备报警</a></li>
+			   <li><a href="/topic">专题图</a></li>
                {{if hasrole .CurrentUser.Roles "role_admin" }}
                <li class="dropdown">
                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">系统管理 <b class="caret"></b></a>
@@ -61,9 +63,11 @@
                    <li><a href="/audit">审计日志</a></li>
                    <li><a href="/loglist">运行日志</a></li>
                    <li><a href="/systemconfig">系统设置</a></li>
+				   <li class="divider"></li>
+				   <li><a href="/help">接口说明</a></li> 
                  </ul>
                </li>
-               <li><a href="/help">接口说明</a></li> 
+               
               {{end}}
              </ul>
             <!--old user position-->

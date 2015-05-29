@@ -59,6 +59,7 @@ func routeConfig() {
 	beego.Router("/reportresend/:id", &controllers.ReportController{}, "*:ReSend")
 	//专题图
 	beego.Router("/topic", &controllers.TopicController{}, "*:TopicView")
+	beego.Router("/topicData", &controllers.TopicController{}, "*:TopicData")
 
 	//用户管理
 	beego.RESTRouter("/user", &controllers.UserController{})
