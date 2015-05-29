@@ -20,8 +20,14 @@ func (this *TopicController) TopicView() {
 
 	//当前时间
 	now := time.Now()
-	CurrentTime := now.Format(CommonTimeLayout)
-	this.Data["CurrentTime"] = CurrentTime
+	bTime := now.Add(time.Minute * -20)
+	eTime := now.Add(time.Minute * 20)
+
+	beginTime := bTime.Format(CommonTimeLayout)
+	endTime := eTime.Format(CommonTimeLayout)
+
+	this.Data["BeginTime"] = beginTime
+	this.Data["EndTime"] = endTime
 
 	paginationDevices := util.Pagination{PageSize: 10, CurrentPage: 1}
 	err := dao.DeviceList(&paginationDevices)

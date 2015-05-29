@@ -23,9 +23,10 @@ func GetTopicData(beginTime string, endTime string, sensors []string) (*[]models
 	timeparam["$gte"] = btime
 
 	etime, _ := time.ParseInLocation(TopicTimeLayout, endTime, Local)
-	timeparam["$lt"] = etime
+	timeparam["$lte"] = etime
 
-	m["time"] = timeparam
+	m["initrealtime"] = timeparam
+	m["sensorid"] = bson.M{"$in": sensors}
 
 	//查询
 	alist := []models.AlarmInfo{}

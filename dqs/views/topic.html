@@ -5,18 +5,20 @@
    <div id="div-list" class="col-md-2">
     <form id="queryform" action="" type="post" class="form-inline">
 	<div id="div-control" class="row">
-      <div class="col-sm-6">
-        <input type="text" class="form-control input-sm" id="eventtime" >
-		<div class="input-group date form_datetime" data-date-format="yyyy-mm-dd hh:ii:ss" > 
-           <input type="text" class="form-control" id="eventtime" name="eventtime" value="{{.CurrentTime}}" readonly >
+      <div class="col-sm-5">
+		<div class="input-group input-sm date form_datetime" data-date-format="yyyy-mm-dd hh:ii:ss" > 
+           <input type="text" class="form-control" id="beginTime" name="beginTime" value="{{.BeginTime}}" readonly >
            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
         </div>
       </div>
-      <div class="col-sm-3">
-        <input type="email" class="form-control input-sm" id="timespan" >
+      <div class="col-sm-5">
+       <div class="input-group input-sm date form_datetime" data-date-format="yyyy-mm-dd hh:ii:ss" > 
+           <input type="text" class="form-control " id="endTime" name="endTime" value="{{.EndTime}}" readonly >
+           <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+        </div>
       </div>
-	 <div class="col-sm-3">
-      <button type="button" id="btn_submit" class="btn btn-default  btn-sm">制图</button>
+	 <div class="col-sm-2">
+      <button type="button" id="btn_submit" class="btn btn-default btn-sm">制图</button>
 	 </div>
 
 	</div>
