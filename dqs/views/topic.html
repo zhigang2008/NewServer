@@ -3,30 +3,16 @@
  <div class="container" >
  	<div class="row" style="background-color:#eee;margin:0px;padding:5px;border-radius:3px;">
    <div id="div-list" class="col-md-2">
-    <form id="queryform" action="" type="post" class="form-inline">
-	<div id="div-control" class="row">
-      <div class="col-sm-5">
-		<div class="input-group input-sm date form_datetime" data-date-format="yyyy-mm-dd hh:ii:ss" > 
-           <input type="text" class="form-control" id="beginTime" name="beginTime" value="{{.BeginTime}}" readonly >
-           <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-        </div>
-      </div>
-      <div class="col-sm-5">
-       <div class="input-group input-sm date form_datetime" data-date-format="yyyy-mm-dd hh:ii:ss" > 
-           <input type="text" class="form-control " id="endTime" name="endTime" value="{{.EndTime}}" readonly >
-           <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-        </div>
-      </div>
-	 <div class="col-sm-2">
-      <button type="button" id="btn_submit" class="btn btn-default btn-sm">制图</button>
-	 </div>
+    <form id="queryform" action="" type="post" >
+        <button type="button" id="btn_submit" class="btn btn-default btn-sm btn-primary">生成专题图</button>
+		<input type="text" class="form-control input-sm form_datetime" id="beginTime" name="beginTime" value="{{.BeginTime}}"  data-date-format="yyyy-mm-dd hh:ii:ss" >
+       <input type="text" class="form-control input-sm form_datetime" id="endTime" name="endTime" value="{{.EndTime}}"  data-date-format="yyyy-mm-dd hh:ii:ss"  >
 
-	</div>
      <div id="devices-list">
       <table id="devices-list-table" class="table table-hover table-bordered table-condensed" >
        <thead>
 		   <tr>
-			   <th><input type="checkbox" name="checkall" id="checkall">全选</input></th>
+			   <th><input type="checkbox" name="checkall" id="checkall"></input></th>
 			   <th><span class="glyphicon glyphicon-tags text-muted"></span></th>
 			   <th>设备编号</th>
 			   <th>观测点</th>
@@ -212,8 +198,8 @@ function showEvent(){
  if(wmsLayer){
  	wmsLayer.destroy();
  }
- $.getJSON("/topicdata",
-          $("form").serialize(),
+ $.getJSON("/topicData",
+          $("#queryform").serialize(),
          function(data){
  	 wmsLayer = new OpenLayers.Layer.WMS("烈度等值线", 
     "{{rawURL .gisServiceUrl}}",
@@ -365,8 +351,7 @@ var gaodelayer = new OpenLayers.Layer.GaodeCache("高德地图",
        $("input[name='Sensors']").each(function(){this.checked=false;}); 
      } 
     }); 
-
- 
+  $("#btn_submit").bind("click",showEvent); 
 });
 </script>
 
