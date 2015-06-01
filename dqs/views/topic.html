@@ -20,14 +20,12 @@
 	     </thead>
 	     <tbody>
 	     	{{range $i,$v:=.allDevices}}
-	     	{{if lt $i 10}}
 	     	<tr style="cursor:pointer;">
 			    <td><input type="checkbox" name="Sensors" value="{{.SensorId}}"/></td>
 	     		<td >{{if .Online}}<span class="glyphicon glyphicon-refresh text-info"></span>{{else}}<span class="glyphicon glyphicon-refresh text-muted"></span>{{end}}</td>
 	     		<td onclick="javascript:showFeature('{{.SensorId}}');">{{.SensorId}}</td>
 	     		<td onclick="javascript:showFeature('{{.SensorId}}');">{{.CustomParams.SiteAliasName}}</td>
 	     	</tr>
-	     	{{end}}
 	     	{{end}}
 	     </tbody>	
       </table>

@@ -3,7 +3,7 @@ package controllers
 import (
 	"dqs/dao"
 	"dqs/models"
-	"dqs/util"
+
 	log "github.com/cihub/seelog"
 	"time"
 )
@@ -28,15 +28,6 @@ func (this *TopicController) TopicView() {
 
 	this.Data["BeginTime"] = beginTime
 	this.Data["EndTime"] = endTime
-
-	paginationDevices := util.Pagination{PageSize: 10, CurrentPage: 1}
-	err := dao.DeviceList(&paginationDevices)
-	if err != nil {
-		log.Warnf("查询设备信息失败:%s", err.Error())
-	}
-	paginationDevices.Compute()
-	this.Data["devices"] = paginationDevices.Data
-	this.Data["devicePages"] = paginationDevices.PageCount
 
 	allDevices, err := dao.GetAllDevices()
 	if err != nil {
@@ -72,6 +63,7 @@ func (this *TopicController) TopicData() {
 	//是否加入网格化虚拟站点
 	dataArray := NetGridCompute(alarms, eventSignal)
 
+	data := make(map[string]interface{})
 	//传递的数据值
 	DataArrayStr := ""
 	DataArrayStrPGA := ""
@@ -95,12 +87,16 @@ func (this *TopicController) TopicData() {
 		}
 	}
 	//添加系统参数
-	this.Data["dataArray"] = DataArrayStr
-	this.Data["dataArrayPGA"] = DataArrayStrPGA
-	this.Data["dataArraySI"] = DataArrayStrSI
+	data["dataArray"] = DataArrayStr
+	data["dataArrayPGA"] = DataArrayStrPGA
+	data["dataArraySI"] = DataArrayStrSI
 
-	this.Data["dataSize"] = len(dataArray)
+	data["dataSize"] = len(dataArray)
 
-	this.Data["lastlng"] = lastlng
-	this.Data["lastlat"] = lastlat
+	data["lastlng"] = lastlng
+	data["lastlat"] = lastlat
+
+	this.Data["json"] = data
+	this.ServeJson()
+
 }
