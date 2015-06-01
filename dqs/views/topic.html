@@ -49,6 +49,7 @@
 <script language="javascript" src="/static/js/openlayers/lib/gaode.js"></script>
 <script language="javascript" src="/static/js/datetimepicker.min.js"></script>
 <script language="javascript" src="/static/js/datetimepicker.zh-CN.js"></script>
+<script language="javascript" src="/static/js/bootbox.min.js"></script>
 <script language="javascript">
 var map, basicLayer, vectorLayer,selector,wmsLayer;
 var sites=[];
@@ -201,7 +202,7 @@ function showEvent(){
          function(data){
 	//判断数据量
 	if(data.dataSize<=0){
-		showWarning("该时间范围选定的烈度计无数据");
+		bootbox.alert("该时间范围选定的烈度计无数据");
 	}else{
  	 wmsLayer = new OpenLayers.Layer.WMS("烈度等值线", 
     "{{rawURL .gisServiceUrl}}",

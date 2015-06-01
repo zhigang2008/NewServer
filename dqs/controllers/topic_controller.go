@@ -60,13 +60,15 @@ func (this *TopicController) TopicData() {
 	//过滤数据，每个点只保留一个值
 	m1 := make(map[string]models.AlarmInfo)
 	for _, a := range *alarms {
-		m1[a.SensorId] = a
+		if a.Intensity >= 5 {
+			m1[a.SensorId] = a
+		}
 	}
 
 	dataArray := make([]models.NetGrid, len(m1))
 	i := 0
-	for _, v := range m1 {
-		dataArray[i] = models.NetGrid{Longitude: v.Longitude, Latitude: v.Latitude, Value: v.Intensity, PGAValue: v.PGA, SIValue: v.SI}
+	for _, val := range m1 {
+		dataArray[i] = models.NetGrid{Longitude: val.Longitude, Latitude: val.Latitude, Value: val.Intensity, PGAValue: val.PGA, SIValue: val.SI}
 		i++
 	}
 
