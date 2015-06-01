@@ -200,7 +200,9 @@ function showEvent(){
           $("#queryform").serialize(),
          function(data){
 	//判断数据量
-	if(data.dataSize>0){
+	if(data.dataSize<=0){
+		showWarning("该时间范围选定的烈度计无数据");
+	}else{
  	 wmsLayer = new OpenLayers.Layer.WMS("烈度等值线", 
     "{{rawURL .gisServiceUrl}}",
 		{
