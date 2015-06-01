@@ -199,6 +199,8 @@ function showEvent(){
  $.getJSON("/topicData",
           $("#queryform").serialize(),
          function(data){
+	//判断数据量
+	if(data.dataSize>0){
  	 wmsLayer = new OpenLayers.Layer.WMS("烈度等值线", 
     "{{rawURL .gisServiceUrl}}",
 		{
@@ -226,9 +228,10 @@ function showEvent(){
 			//opacity: 0.8,
 			ratio: 1} 
 	);
- map.addLayer(wmsLayer);
- //map.raiseLayer(vecLyr, map.layers.length);
- map.setLayerIndex(wmsLayer, 9999);
+    map.addLayer(wmsLayer);
+    //map.raiseLayer(vecLyr, map.layers.length);
+    map.setLayerIndex(wmsLayer, 9999);
+   }
  });
 }
 //移除等值线图层

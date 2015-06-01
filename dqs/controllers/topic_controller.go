@@ -52,16 +52,23 @@ func (this *TopicController) TopicData() {
 	beginTime := this.GetString("beginTime")
 	endTime := this.GetString("endTime")
 	sensors := this.GetStrings("Sensors")
-
-	var eventSignal models.EventSignal = models.EventSignal{}
 	//查找报警数据
 	alarms, err := dao.GetTopicData(beginTime, endTime, sensors)
 	if err != nil {
 		log.Warnf("查找等值线的报警数据时出错:%s", err.Error())
 	}
+	//过滤数据，每个点只保留一个值
+	m1 := make(map[string]models.AlarmInfo)
+	for _, a := range *alarms {
+		m1[a.SensorId] = a
+	}
 
-	//是否加入网格化虚拟站点
-	dataArray := NetGridCompute(alarms, eventSignal)
+	dataArray := make([]models.NetGrid, len(m1))
+	i := 0
+	for _, v := range m1 {
+		dataArray[i] = models.NetGrid{Longitude: v.Longitude, Latitude: v.Latitude, Value: v.Intensity, PGAValue: v.PGA, SIValue: v.SI}
+		i++
+	}
 
 	data := make(map[string]interface{})
 	//传递的数据值
