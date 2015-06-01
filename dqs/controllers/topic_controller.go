@@ -3,7 +3,6 @@ package controllers
 import (
 	"dqs/dao"
 	"dqs/models"
-
 	log "github.com/cihub/seelog"
 	"time"
 )
@@ -60,7 +59,7 @@ func (this *TopicController) TopicData() {
 	//过滤数据，每个点只保留一个值
 	m1 := make(map[string]models.AlarmInfo)
 	for _, a := range *alarms {
-		if a.Intensity >= 5 {
+		if a.Intensity >= RuntimeConfigs.EventParams.MinEventRecordLevel {
 			m1[a.SensorId] = a
 		}
 	}
